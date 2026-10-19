@@ -121,7 +121,7 @@ export const salonImages = {
       alt: "Full glam with gold glitter eyes, a bold red lip and a high bun",
     },
     "Natural + Makeup": {
-      src: asset("Natural + Makeup.jpg"),
+      src: asset("natural-plus-makeup.jpg"),
       alt: "Long wavy install with a pink-eyed natural glam look",
     },
     "Soft Glam + Makeup": {
@@ -129,7 +129,7 @@ export const salonImages = {
       alt: "Side-swept updo with gold soft glam eyes and full lashes",
     },
     "Full Glam + Makeup": {
-      src: asset("Full Glam + Makeup.jpg"),
+      src: asset("full-glam-plus-makeup.jpg"),
       alt: "Sleek bob install with bronze glam eyes and a glossy brown lip",
     },
 
@@ -155,7 +155,7 @@ export const salonImages = {
       alt: "Short almond nails in sheer pink gel with black polka-dot French tips and white 3D flowers",
     },
     "Tips & Gel": {
-      src: asset("Tips & Gel.jpg"),
+      src: asset("tips-and-gel.jpg"),
       alt: "Short square French tips with small white heart details",
     },
     "Polygel normal tips": {
