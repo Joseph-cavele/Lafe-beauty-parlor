@@ -9,7 +9,7 @@ const settingsSchema = new Schema(
     /* Defaults are the salon's real details, not samples. Kept in step with
        lib/salon-contact.ts by hand — this model cannot import it, since the
        seed and the API both load the schema outside the app's module graph. */
-    email: { type: String, default: "luyandathabethe2k@gmail.com" },
+    email: { type: String, default: "lafebeauty0@gmail.com" },
     phone: { type: String, default: "069 623 8320" },
     address: { type: String, default: "Phokeng" },
     openingHours: { type: String, default: "Monday – Sunday, 08:30 – 18:00" },

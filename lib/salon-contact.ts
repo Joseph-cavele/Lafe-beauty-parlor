@@ -26,7 +26,7 @@ export const SALON_WHATSAPP = "27696238320"
 
 /** Mailbox the site links to. Not where the contact form delivers — that
     goes to OWNER_EMAIL, server-side. */
-export const SALON_EMAIL = "luyandathabethe2k@gmail.com"
+export const SALON_EMAIL = "lafebeauty0@gmail.com"
 
 /* The dashboard owner's sign-in email and name are NOT here: they come from
    OWNER_EMAIL / OWNER_NAME in .env (lib/owner-account.ts), so no personal
