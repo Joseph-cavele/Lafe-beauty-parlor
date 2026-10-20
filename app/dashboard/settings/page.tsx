@@ -8,7 +8,8 @@ import { SignOutButton } from "@/features/auth/components/sign-out-button"
 import { SettingsForm } from "@/features/settings/components/settings-form"
 import { OwnerEmailForm } from "@/features/settings/components/owner-email-form"
 import { OwnerNameForm } from "@/features/settings/components/owner-name-form"
-import { getOwnerLoginEmail } from "@/features/auth/server/login-code"
+import { DashboardAccessForm } from "@/features/settings/components/dashboard-access-form"
+import { getDashboardUsers, getOwnerLoginEmail, normalizeEmail } from "@/features/auth/server/login-code"
 
 function initials(name?: string | null) {
   if (!name) return "?"
@@ -22,11 +23,14 @@ function initials(name?: string | null) {
 
 export default async function DashboardSettingsPage() {
   const queryClient = getQueryClient()
-  const [session, ownerLoginEmail] = await Promise.all([
+  const [session, ownerLoginEmail, dashboardUsers] = await Promise.all([
     auth(),
     getOwnerLoginEmail(),
+    getDashboardUsers(),
     queryClient.prefetchQuery({ queryKey: ["settings"], queryFn: getSettings }),
   ])
+  // Only the owner manages the sign-in email and who has access.
+  const isOwner = normalizeEmail(session?.user?.email ?? "") === ownerLoginEmail
 
   return (
     <div className="flex flex-col gap-6 p-4 sm:p-6">
@@ -74,7 +78,12 @@ export default async function DashboardSettingsPage() {
             </CardContent>
           </Card>
 
-          <OwnerEmailForm currentEmail={ownerLoginEmail} />
+          {isOwner && <OwnerEmailForm currentEmail={ownerLoginEmail} />}
+          <DashboardAccessForm
+            ownerEmail={ownerLoginEmail}
+            initialUsers={dashboardUsers}
+            canManage={isOwner}
+          />
         </div>
       </div>
     </div>

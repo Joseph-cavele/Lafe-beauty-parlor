@@ -1,11 +1,10 @@
 import NextAuth, { CredentialsSignin } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import Google from "next-auth/providers/google"
 import { loginCodeSchema } from "@/features/auth/schema"
 import {
   ensureOwnerUser,
   getUserById,
-  isOwnerEmail,
+  isAllowedEmail,
   verifyLoginCode,
 } from "@/features/auth/server/login-code"
 
@@ -19,13 +18,10 @@ class LoginCodeError extends CredentialsSignin {
   }
 }
 
-/* Google OAuth client from Google Cloud Console. CLIENT_ID / CLIENT_SECRET
-   are the names in this project's .env; AUTH_GOOGLE_* (Auth.js's own
-   convention) also work. Its Authorized redirect URI must be
-   <AUTH_URL>/api/auth/callback/google. Without both, Google sign-in is off. */
-const googleId = process.env.AUTH_GOOGLE_ID ?? process.env.CLIENT_ID
-const googleSecret = process.env.AUTH_GOOGLE_SECRET ?? process.env.CLIENT_SECRET
-export const googleSignInEnabled = Boolean(googleId && googleSecret)
+/* How often an open session re-checks that its email is still allowed, so
+   someone the owner removes loses access within minutes, not when their
+   30-day session would otherwise expire. */
+const ACCESS_RECHECK_MS = 5 * 60 * 1000
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   // Trust the deployment host (Vercel serves behind a proxy). Without this,
@@ -34,7 +30,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/login", error: "/login" },
   providers: [
-    /* Passwordless: email + the one-time code emailed by /api/login-code. */
+    /* Passwordless: email + the one-time code emailed by /api/login-code.
+       Only the owner and the emails the owner allows can sign in. */
     Credentials({
       credentials: {
         email: {},
@@ -60,23 +57,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       },
     }),
-    /* "Sign in with Google" — the same single owner, proven by Google. */
-    ...(googleSignInEnabled
-      ? [Google({ clientId: googleId, clientSecret: googleSecret })]
-      : []),
   ],
   callbacks: {
-    /* Google may only sign in the dashboard's sign-in address, and only
-       once Google has verified it. Anyone else goes back to /login with a
-       reason the card explains (GoogleNotOwner / GoogleUnverified). */
-    async signIn({ account, profile }) {
-      if (account?.provider !== "google") return true
-      const email = profile?.email
-      if (!email || profile?.email_verified !== true) return "/login?error=GoogleUnverified"
-      return (await isOwnerEmail(email)) ? true : "/login?error=GoogleNotOwner"
-    },
-    async jwt({ token, user, account, trigger }) {
-      /* Settings → Account renamed the owner: re-read the name from the
+    async jwt({ token, user, trigger }) {
+      /* Settings → Account renamed the user: re-read the name from the
          database. The client only signals that something changed — it never
          supplies the value, so it can't write its own session. */
       if (trigger === "update" && token.sub) {
@@ -84,16 +68,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (fresh) token.name = fresh.name
         return token
       }
-      if (account?.provider === "google" && token.email) {
-        // Google's user object has no role: use the owner's own account, so
-        // both sign-in methods land in the same session identity.
-        const owner = await ensureOwnerUser(token.email)
-        token.sub = String(owner._id)
-        token.name = owner.name
-        token.email = owner.email
-        token.role = owner.role as "owner" | "stylist"
-      } else if (user) {
+      if (user) {
         token.role = user.role as "owner" | "stylist"
+        token.accessCheckedAt = Date.now()
+        return token
+      }
+      /* Removed from Dashboard access (or the owner's email changed)? End
+         the session. Checked every few minutes, not on every request. */
+      const checkedAt = typeof token.accessCheckedAt === "number" ? token.accessCheckedAt : 0
+      if (token.email && Date.now() - checkedAt > ACCESS_RECHECK_MS) {
+        if (!(await isAllowedEmail(token.email))) return null
+        token.accessCheckedAt = Date.now()
       }
       return token
     },

@@ -11,8 +11,10 @@ import { loginCodeEmailHtml } from "@/emails/login-code"
 /* ══════════════════════════════════════════════════════════════════════
    Passwordless dashboard sign-in, and changing the sign-in address.
 
-   The dashboard has ONE sign-in address: Settings.ownerLoginEmail, or
-   OWNER_EMAIL from .env while that is empty (lib/owner-account.ts).
+   Who can sign in: the OWNER — Settings.ownerLoginEmail, or OWNER_EMAIL
+   from .env while that is empty (lib/owner-account.ts) — plus anyone the
+   owner adds under Settings → Dashboard access (Settings.dashboardUsers).
+   Nobody else can even request a code.
 
    Sign in   requestLoginCode → code emailed to that address →
              verifyLoginCode (from the Credentials provider in auth.ts).
@@ -44,10 +46,57 @@ export async function getOwnerLoginEmail() {
   return email
 }
 
-/** True when `email` is the dashboard sign-in address. Also gates Google sign-in. */
+/** True when `email` is the owner's sign-in address. */
 export async function isOwnerEmail(email: string) {
   const owner = await getOwnerLoginEmail()
   return owner !== "" && normalizeEmail(email) === owner
+}
+
+export type DashboardUser = { name: string; email: string }
+
+/** The people the owner has allowed to sign in, besides the owner. */
+export async function getDashboardUsers(): Promise<DashboardUser[]> {
+  await connectDB()
+  const settings = await SettingsModel.findOne({ key: "salon" }, { dashboardUsers: 1 }).lean<{
+    dashboardUsers?: DashboardUser[]
+  }>()
+  return (settings?.dashboardUsers ?? []).map((u) => ({ name: u.name, email: normalizeEmail(u.email) }))
+}
+
+/** True when `email` may sign in: the owner, or on the owner's access list. */
+export async function isAllowedEmail(email: string) {
+  if (await isOwnerEmail(email)) return true
+  const wanted = normalizeEmail(email)
+  return (await getDashboardUsers()).some((u) => u.email === wanted)
+}
+
+export type AccessChangeResult =
+  | { ok: true }
+  | { ok: false; reason: "is_owner" | "already_added" | "not_found" }
+
+/** Owner only (callers check): allow `email` to sign in to the dashboard. */
+export async function addDashboardUser(rawName: string, rawEmail: string): Promise<AccessChangeResult> {
+  const email = normalizeEmail(rawEmail)
+  if (await isOwnerEmail(email)) return { ok: false, reason: "is_owner" }
+  if ((await getDashboardUsers()).some((u) => u.email === email)) return { ok: false, reason: "already_added" }
+  await SettingsModel.updateOne(
+    { key: "salon" },
+    { $push: { dashboardUsers: { name: rawName.trim(), email, addedAt: new Date() } }, $setOnInsert: { key: "salon" } },
+    { upsert: true, setDefaultsOnInsert: true }
+  )
+  return { ok: true }
+}
+
+/** Owner only (callers check): take away `email`'s access. Their account and
+    any pending codes go too; an open session ends at its next access check. */
+export async function removeDashboardUser(rawEmail: string): Promise<AccessChangeResult> {
+  const email = normalizeEmail(rawEmail)
+  if (await isOwnerEmail(email)) return { ok: false, reason: "is_owner" }
+  const res = await SettingsModel.updateOne({ key: "salon" }, { $pull: { dashboardUsers: { email } } })
+  if (res.modifiedCount === 0) return { ok: false, reason: "not_found" }
+  await UserModel.deleteOne({ email, role: "owner" })
+  await LoginCodeModel.deleteMany({ email })
+  return { ok: true }
 }
 
 /** A user's current name, for refreshing the session after a rename. */
@@ -59,16 +108,17 @@ export async function getUserById(id: string) {
 }
 
 /**
- * The owner's account for a verified sign-in address — created on first
- * sign-in if the seed hasn't made it yet, so a fresh database still lets
- * the owner in. Shared by the code and Google sign-in paths.
+ * The account for a verified, allowed sign-in address — created on first
+ * sign-in. Everyone allowed gets dashboard access (role "owner"); only the
+ * owner's own address can change who is allowed (see the access API).
  */
 export async function ensureOwnerUser(rawEmail: string) {
   await connectDB()
   const email = normalizeEmail(rawEmail)
+  const listed = (await getDashboardUsers()).find((u) => u.email === email)
   return UserModel.findOneAndUpdate(
     { email },
-    { $setOnInsert: { email, name: ownerNameFromEnv(), role: "owner" } },
+    { $setOnInsert: { email, name: listed?.name || ownerNameFromEnv(), role: "owner" } },
     { upsert: true, returnDocument: "after" }
   )
 }
@@ -197,14 +247,14 @@ async function checkCode(email: string, rawCode: string, purpose: Purpose): Prom
 export type RequestCodeResult = IssueResult | { ok: false; reason: "not_owner" }
 
 export async function requestLoginCode(rawEmail: string): Promise<RequestCodeResult> {
-  if (!(await isOwnerEmail(rawEmail))) return { ok: false, reason: "not_owner" }
+  if (!(await isAllowedEmail(rawEmail))) return { ok: false, reason: "not_owner" }
   return issueCode(normalizeEmail(rawEmail), "login")
 }
 
 export type VerifyCodeResult = CheckResult | { ok: false; reason: "not_owner" }
 
 export async function verifyLoginCode(rawEmail: string, rawCode: string): Promise<VerifyCodeResult> {
-  if (!(await isOwnerEmail(rawEmail))) return { ok: false, reason: "not_owner" }
+  if (!(await isAllowedEmail(rawEmail))) return { ok: false, reason: "not_owner" }
   return checkCode(normalizeEmail(rawEmail), rawCode, "login")
 }
 
@@ -216,7 +266,9 @@ export async function requestEmailChangeCode(rawNewEmail: string): Promise<Email
   const newEmail = normalizeEmail(rawNewEmail)
   const current = await getOwnerLoginEmail()
   if (newEmail === current) return { ok: false, reason: "same_email" }
-  if (await UserModel.exists({ email: newEmail })) return { ok: false, reason: "in_use" }
+  if ((await UserModel.exists({ email: newEmail })) || (await getDashboardUsers()).some((u) => u.email === newEmail)) {
+    return { ok: false, reason: "in_use" }
+  }
   return issueCode(newEmail, "change-email")
 }
 
@@ -228,7 +280,9 @@ export async function confirmEmailChange(rawNewEmail: string, rawCode: string): 
   if (!checked.ok) return checked
 
   const current = await getOwnerLoginEmail()
-  if (await UserModel.exists({ email: newEmail })) return { ok: false, reason: "in_use" }
+  if ((await UserModel.exists({ email: newEmail })) || (await getDashboardUsers()).some((u) => u.email === newEmail)) {
+    return { ok: false, reason: "in_use" }
+  }
 
   // The owner's account moves with the address, so name and history stay.
   await UserModel.updateOne({ email: current, role: "owner" }, { $set: { email: newEmail } })

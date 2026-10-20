@@ -38,34 +38,17 @@ function safeTarget(callbackUrl: string | null) {
     : "/dashboard"
 }
 
-/* Why a Google sign-in came back to /login (`?error=` from auth.ts / Auth.js). */
-function googleErrorMessage(error: string | null) {
-  switch (error) {
-    case null:
-      return null
-    case "GoogleNotOwner":
-    case "AccessDenied":
-      return "That Google account doesn't have access to the dashboard. Use the owner's Google account, or sign in with an email code."
-    case "GoogleUnverified":
-      return "Google hasn't verified that account's email address, so it can't be used to sign in."
-    default:
-      return "Google sign-in didn't work. Please try again, or sign in with an email code."
-  }
-}
-
 /**
- * Passwordless sign-in for the glass card: email → emailed code → dashboard,
- * or "Sign in with Google" for the same owner. The code is created and
- * emailed by /api/login-code; both are checked in auth.ts.
+ * Passwordless sign-in for the glass card: email → emailed code → dashboard.
+ * Only the owner and the emails the owner allows can sign in. The code is
+ * created and emailed by /api/login-code and checked in auth.ts.
  */
-export function SignInCard({ googleEnabled = false }: { googleEnabled?: boolean }) {
+export function SignInCard() {
   const searchParams = useSearchParams()
   const [step, setStep] = useState<"email" | "code">("email")
   const [email, setEmail] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formError, setFormError] = useState<string | null>(() =>
-    googleErrorMessage(searchParams.get("error"))
-  )
+  const [formError, setFormError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [resendIn, setResendIn] = useState(0)
 
@@ -179,17 +162,6 @@ export function SignInCard({ googleEnabled = false }: { googleEnabled?: boolean 
       isLoading={isSubmitting}
       error={formError}
       notice={notice}
-      onGoogle={
-        googleEnabled
-          ? () => {
-              setIsSubmitting(true)
-              setFormError(null)
-              // Leaves for Google's consent screen and comes back signed in
-              // (or to /login?error=… with the reason).
-              signIn("google", { callbackUrl: safeTarget(searchParams.get("callbackUrl")) })
-            }
-          : undefined
-      }
     />
   )
 }

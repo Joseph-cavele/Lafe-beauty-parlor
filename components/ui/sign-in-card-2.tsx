@@ -82,8 +82,6 @@ export type SignInCard2Props = {
   error?: string | null
   /** Shown above the fields in gold, e.g. "We sent a code to …". */
   notice?: string | null
-  /** Starts "Sign in with Google". Omitted = Google isn't configured. */
-  onGoogle?: () => void
 }
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
@@ -114,7 +112,6 @@ export function SignInCard2({
   isLoading = false,
   error,
   notice,
-  onGoogle,
 }: SignInCard2Props) {
   const [code, setCode] = useState("")
   const [focusedInput, setFocusedInput] = useState<FocusedInput>(null)
@@ -540,47 +537,8 @@ export function SignInCard2({
                   </div>
                 </motion.button>
 
-                {/* Divider */}
-                <div className="relative mt-1 mb-4 flex items-center">
-                  <div className="grow border-t border-white/10" />
-                  <motion.span
-                    className="mx-3 text-xs text-white/40"
-                    initial={reduce ? false : { opacity: 0.7 }}
-                    animate={reduce ? undefined : { opacity: [0.7, 0.9, 0.7] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    or
-                  </motion.span>
-                  <div className="grow border-t border-white/10" />
-                </div>
-
-                {/* Google — live when the OAuth client is configured (auth.ts). */}
-                <button
-                  type="button"
-                  disabled={!onGoogle || isLoading}
-                  onClick={onGoogle}
-                  title={onGoogle ? undefined : "Google sign-in isn't set up yet."}
-                  className="relative flex h-10 w-full cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-full border border-white/15 bg-white/5 font-medium text-white transition-colors duration-300 hover:border-brand-accent/60 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-white/15 disabled:hover:bg-white/5"
-                >
-                  {/* Google "G", in Google's own colours. */}
-                  <svg aria-hidden viewBox="0 0 24 24" className="size-4">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
-                    <path fill="#FBBC05" d="M5.84 14.1A6.6 6.6 0 0 1 5.5 12c0-.73.13-1.44.34-2.1V7.06H2.18A11 11 0 0 0 1 12c0 1.77.42 3.45 1.18 4.94l3.66-2.84z" />
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
-                  </svg>
-                  <span className="text-xs text-white/85">Sign in with Google</span>
-                </button>
-
                 <p className="mt-4 text-center text-xs text-white/45">
-                  Staff accounts are created by the salon owner.{" "}
-                  <span
-                    aria-disabled
-                    title="Self-serve sign-up isn't available."
-                    className="cursor-not-allowed font-medium text-white/35"
-                  >
-                    Sign up
-                  </span>
+                  Only emails the salon owner has added can sign in.
                 </p>
 
                 <p className="text-center text-xs">

@@ -4,10 +4,11 @@ import { SALON_CONTACT_PERSON } from "@/lib/salon-contact"
    The dashboard owner — from the environment (.env), never hard-coded, so
    a personal address isn't committed to the repository.
 
-     OWNER_EMAIL   the address that signs in to the dashboard (emailed code
-                   or Google), and that receives new-booking and
-                   contact-form notifications. Settings → Sign-in email can
-                   override the sign-in part from the dashboard.
+     OWNER_EMAIL   the owner's dashboard sign-in address (emailed code), and
+                   where new-booking and contact-form notifications go.
+                   Settings → Sign-in email can override the sign-in part,
+                   and Settings → Dashboard access lets the owner allow
+                   other emails to sign in.
      OWNER_NAME    optional display name for the owner's account; defaults
                    to the salon's contact person.
 

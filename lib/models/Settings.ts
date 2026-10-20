@@ -20,6 +20,19 @@ const settingsSchema = new Schema(
        through Settings → Sign-in email, which confirms the new address with
        a code first (features/auth/server/login-code.ts). */
     ownerLoginEmail: { type: String, default: "" },
+    /* Everyone else the owner has allowed to sign in to the dashboard
+       (Settings → Dashboard access). Emails are stored lower-case. */
+    dashboardUsers: {
+      type: [
+        {
+          _id: false,
+          name: { type: String, required: true },
+          email: { type: String, required: true },
+          addedAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
   },
   { timestamps: true }
 )

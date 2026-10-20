@@ -4,7 +4,8 @@ import { z } from "zod"
 import { requireOwner } from "@/lib/auth-guard"
 import { connectDB } from "@/lib/db"
 import { UserModel } from "@/lib/models/User"
-import { getOwnerLoginEmail } from "@/features/auth/server/login-code"
+import { auth } from "@/auth"
+import { normalizeEmail } from "@/features/auth/server/login-code"
 
 /**
  * PATCH /api/settings/owner { name } — rename the owner (Settings → Account).
@@ -29,12 +30,14 @@ export async function PATCH(req: Request) {
 
   await connectDB()
   const updated = await UserModel.findOneAndUpdate(
-    { email: await getOwnerLoginEmail(), role: "owner" },
+    // The signed-in person's own account — the owner, or someone the owner
+    // added under Dashboard access — never someone else's.
+    { email: normalizeEmail((await auth())?.user?.email ?? ""), role: "owner" },
     { $set: { name: parsed.data.name } },
     { returnDocument: "after" }
   )
   if (!updated) {
-    return NextResponse.json({ message: "Couldn't find the owner account. Sign out and back in, then try again." }, { status: 404 })
+    return NextResponse.json({ message: "Couldn't find your account. Sign out and back in, then try again." }, { status: 404 })
   }
   return NextResponse.json({ name: updated.name })
 }

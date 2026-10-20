@@ -101,7 +101,7 @@ export function SiteFooter() {
         </div>
 
         <div className="flex flex-col items-center gap-4 text-center md:items-end md:text-right">
-          {/* The owner's way into the dashboard (sign-in by email code or Google). */}
+          {/* Into the dashboard — sign-in by emailed code, for allowed emails only. */}
           <Link
             href="/login"
             className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-brand-accent/60 px-5 py-2 font-ui text-sm font-semibold text-brand-accent-ink transition-colors duration-300 hover:bg-brand-accent hover:text-brand-on-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-accent"

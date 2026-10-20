@@ -7,8 +7,9 @@
      /public/assets/       downloaded photos the owner chose for services that
                            have no fitting photo of the salon's own (2026-10-20):
                            Soft Glam for 2, Natural Beat for 4, Soft Glam for 4,
-                           Full Glam for 4, Full Glam + Makeup, Classic and
-                           Hybrid lashes — plus the Gel toes photos
+                           Full Glam for 4, Natural + Makeup, Full Glam +
+                           Makeup, Classic and Hybrid lashes — plus the Gel
+                           toes photos
 
    Every service shows a photo of the work — never the logo; one without its
    own photo falls back to its category's. To fill a slot: add the salon's photo to one of the
@@ -16,8 +17,10 @@
    what the photo shows.
    ══════════════════════════════════════════════════════════════════════ */
 
-/** The salon's own work photo in /public/Lafe-images. */
+/** The salon's own work photo in /public/Lafe-images (WhatsApp names). */
 const lafe = (time: string) => encodeURI(`/Lafe-images/WhatsApp Image 2026-10-19 at ${time}.jpeg`)
+/** A photo in /public/Lafe-images that the owner renamed (makeup1.jpeg …). */
+const lafeFile = (file: string) => encodeURI(`/Lafe-images/${file}`)
 /** The salon's own photos in /public/new-images (2026-10-20). */
 const fresh = (file: string) => encodeURI(`/new-images/${file}`)
 /** Owner-chosen downloaded photo in /public/assets — see the note above. */
@@ -73,8 +76,8 @@ export const salonImages = {
       is a photo no service card on that page uses. */
   category: {
     Makeup: {
-      src: lafe("08.35.50 (2)"),
-      alt: "Smiling client with gold eyes, a berry lip and red French-tip almond nails",
+      src: fresh("WhatsApp Image 2026-10-20 at 09.59.34 (2).jpeg"),
+      alt: "Three La-fe clients outdoors in black dresses, with soft glam makeup",
     },
     Lashes: {
       src: fresh("mobile-hero-image.jpeg"),
@@ -97,7 +100,7 @@ export const salonImages = {
   service: {
     // ── Makeup ──────────────────────────────────────────────────────────
     "Natural Beat": {
-      src: lafe("08.35.49 (1)"),
+      src: lafeFile("makeup5.jpeg"),
       alt: "Client with a soft natural beat, full lashes and a pink nude lip, in front of the La-fe Beauty Parlor sign",
     },
     "Soft Glam": {
@@ -105,11 +108,11 @@ export const salonImages = {
       alt: "Client in a curly wig with soft glam makeup, full lashes and a berry lip, in front of the La-fe sign",
     },
     "Full Glam": {
-      src: lafe("08.35.50"),
+      src: lafeFile("makeup1.jpeg"),
       alt: "Full glam with smoky brown eyes, full lashes and a matte nude lip, with a yellow head wrap",
     },
     "Natural Beat for 2": {
-      src: lafe("08.35.50 (1)"),
+      src: lafeFile("makeup3.jpeg"),
       alt: "Bold blue eyeshadow with winged liner and a pink nude lip, worn with long twists",
     },
     "Soft Glam for 2": {
@@ -132,13 +135,15 @@ export const salonImages = {
       src: asset("1c2be9c3583109a282857e664e90ee36.jpg"),
       alt: "Full glam with gold glitter eyes, a bold red lip and a high bun",
     },
+    /* Installation + makeup: the photo has to show both — a finished
+       install AND the makeup look (not an install in progress). */
     "Natural + Makeup": {
-      src: lafe("08.35.51 (2)"),
-      alt: "Wig install with a smooth, melted lace hairline and lashes applied",
+      src: asset("natural-plus-makeup.jpg"),
+      alt: "Long wavy install with a pink-eyed natural glam look",
     },
     "Soft Glam + Makeup": {
-      src: lafe("08.35.53"),
-      alt: "Sleek straight bob wig being installed, with a natural hairline",
+      src: lafeFile("makeup2.jpeg"),
+      alt: "Client with a sleek bob, gold soft glam eyes, a berry lip and red French-tip nails",
     },
     "Full Glam + Makeup": {
       src: asset("full-glam-plus-makeup.jpg"),
@@ -184,8 +189,8 @@ export const salonImages = {
 
     // ── Wigs ────────────────────────────────────────────────────────────
     "Wig installation": {
-      src: lafe("08.35.52 (1)"),
-      alt: "Finished curly lace wig install with a side part and a natural-looking hairline",
+      src: lafeFile("wig installation1.jpeg"),
+      alt: "La-fe client in a long, curly human-blend wig with a full facebeat, shown twice — close up and dressed for an event",
     },
   } as Record<string, ImageSlot>,
 
@@ -203,10 +208,10 @@ export const salonImages = {
     { src: lafe("08.35.47"), label: "Gold Wire Nail Art", alt: "Short almond nails in sheer pink with fine gold wire outlines, held over the La-fe Beauty Parlor sign" },
     { src: lafe("08.35.46 (1)"), label: "Minimal Nail Art", alt: "Short natural nails with tiny minimalist line art and a blue accent dot" },
     { src: lafe("08.35.48 (1)"), label: "Pink Snowflake Nails", alt: "Long coffin nails in hot pink and nude with polka dots and white snowflake art" },
-    { src: lafe("08.35.50"), label: "Smoky Glam", alt: "Smoky brown eyes, full lashes and a matte nude lip, with a yellow head wrap" },
+    { src: lafeFile("makeup1.jpeg"), label: "Smoky Glam", alt: "Smoky brown eyes, full lashes and a matte nude lip, with a yellow head wrap" },
     { src: lafe("08.35.51 (1)"), label: "Lace Wig Install", alt: "Stylist laying the lace of a wig install, with lashes already applied" },
     { src: lafe("08.35.47 (3)"), label: "Black & White Marble", alt: "Long square nails in glossy black and black-and-white marble, held over the La-fe sign" },
-    { src: lafe("08.35.50 (1)"), label: "Blue Glam", alt: "Bold blue eyeshadow with winged liner and a pink nude lip, worn with long twists" },
+    { src: lafeFile("makeup3.jpeg"), label: "Blue Glam", alt: "Bold blue eyeshadow with winged liner and a pink nude lip, worn with long twists" },
     { src: lafe("08.35.48"), label: "Red Statement Nails", alt: "Long square nails in glossy red, some with nude French tips and polka-dot accents" },
     { src: lafe("08.35.51"), label: "Bridal Glam", alt: "Smiling bride with gold eyes, a red lip and a pearl hair crown, in front of the La-fe banner" },
     { src: lafe("08.35.52"), label: "Wig Install in Progress", alt: "Stylist melting the lace of a curly wig install with a blow-dryer" },
@@ -215,7 +220,7 @@ export const salonImages = {
     { src: fresh("WhatsApp Image 2026-10-20 at 09.59.34 (2).jpeg"), label: "Glam Day Out", alt: "Three La-fe clients outdoors in black dresses, with soft glam makeup" },
     { src: lafe("08.35.47 (1)"), label: "Teal & Gold Foil", alt: "Long coffin nails in glossy teal with a gold-foil accent nail" },
     { src: lafe("08.35.51 (2)"), label: "Melted Lace Hairline", alt: "Wig install with a smooth, melted lace hairline" },
-    { src: lafe("08.35.50 (2)"), label: "Glam & Red French", alt: "Smiling client with gold eyes, a berry lip and red French-tip almond nails" },
+    { src: lafeFile("makeup2.jpeg"), label: "Glam & Red French", alt: "Smiling client with gold eyes, a berry lip and red French-tip almond nails" },
     { src: lafe("08.35.45"), label: "Polka-Dot French", alt: "Almond nails with polka-dot French tips and white 3D flowers, over the La-fe sign" },
     { src: lafe("08.35.53"), label: "Sleek Bob Install", alt: "Sleek straight bob wig being installed, with a natural hairline" },
   ],

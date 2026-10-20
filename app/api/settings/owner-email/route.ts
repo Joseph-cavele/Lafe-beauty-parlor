@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
+import { auth } from "@/auth"
 import { requireOwner } from "@/lib/auth-guard"
 import {
   confirmEmailChange,
   getOwnerLoginEmail,
+  isOwnerEmail,
   requestEmailChangeCode,
 } from "@/features/auth/server/login-code"
 
@@ -41,6 +43,12 @@ const fail = (message: string, status: number, extra?: object) =>
 export async function POST(req: Request) {
   const denied = await requireOwner()
   if (denied) return denied
+  // Only the owner changes the owner's sign-in email — not someone added
+  // under Dashboard access.
+  const session = await auth()
+  if (!session?.user?.email || !(await isOwnerEmail(session.user.email))) {
+    return NextResponse.json({ message: "Only the salon owner can change the sign-in email." }, { status: 403 })
+  }
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) {
