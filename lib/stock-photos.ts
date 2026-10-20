@@ -11,8 +11,8 @@ export const stockPhotos = {
   stylistHeadshots: [] as string[],
 }
 
-/** Last-resort thumbnail for a service with no photo: the La-fe logo, so a
-    service never borrows another's picture or a stock image. */
-export function serviceThumb() {
-  return salonImages.logo.src
+/** Last-resort thumbnail for a service with no photo: its category's photo
+    (never the logo). */
+export function serviceThumb(category?: string) {
+  return ((category && salonImages.category[category]) || salonImages.category.Makeup).src
 }

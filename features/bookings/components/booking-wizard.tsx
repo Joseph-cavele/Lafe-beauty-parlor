@@ -163,7 +163,7 @@ export function BookingWizard() {
   const serviceImage = (service: Service) =>
     service.image ||
     servicePhoto(service)?.image ||
-    serviceThumb()
+    serviceThumb(service.category)
 
   /* Describes what is in the frame. Falling back to the service name would
      make the alt text a duplicate of the heading beside it, which a screen

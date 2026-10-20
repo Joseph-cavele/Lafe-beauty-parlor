@@ -1,15 +1,17 @@
 /* ══════════════════════════════════════════════════════════════════════
    IMAGE SLOTS — every photograph and the logo the site shows, in one place.
 
-   ONLY La-fe Beauty Parlor's own photos are used (the owner's decision,
-   2026-10-20) — no downloaded or stock images. Sources:
+   La-fe Beauty Parlor's own photos first. Sources:
      /public/Lafe-images/  the salon's photos of its work (WhatsApp, 2026-10-19)
      /public/new-images/   the real salon, clients, hero and booking photos
-     /public/assets/       now only the Gel toes photos, kept at the owner's
-                           request
+     /public/assets/       downloaded photos the owner chose for services that
+                           have no fitting photo of the salon's own (2026-10-20):
+                           Soft Glam for 2, Natural Beat for 4, Soft Glam for 4,
+                           Full Glam for 4, Full Glam + Makeup, Classic and
+                           Hybrid lashes — plus the Gel toes photos
 
-   A service with no suitable photo of its own shows the La-fe logo rather
-   than a stock picture. To fill a slot: add the salon's photo to one of the
+   Every service shows a photo of the work — never the logo; one without its
+   own photo falls back to its category's. To fill a slot: add the salon's photo to one of the
    folders above, change that one path below, and write an `alt` that says
    what the photo shows.
    ══════════════════════════════════════════════════════════════════════ */
@@ -18,7 +20,7 @@
 const lafe = (time: string) => encodeURI(`/Lafe-images/WhatsApp Image 2026-10-19 at ${time}.jpeg`)
 /** The salon's own photos in /public/new-images (2026-10-20). */
 const fresh = (file: string) => encodeURI(`/new-images/${file}`)
-/** /public/assets — only the Gel toes photos remain there. */
+/** Owner-chosen downloaded photo in /public/assets — see the note above. */
 const asset = (file: string) => encodeURI(`/assets/${file}`)
 
 export type ImageSlot = { src: string; alt: string }
@@ -88,10 +90,10 @@ export const salonImages = {
     },
   } as Record<string, ImageSlot>,
 
-  /** Per-service photos — the salon's own work — keyed by the exact service
-      name in lib/salon-services.ts. No two services share a photo. A
-      service left out here shows the La-fe logo (Soft Glam for 2, Full
-      Glam for 4 and Hybrid lashes: no suitable photo of the salon's own). */
+  /** Per-service photos keyed by the exact service name in
+      lib/salon-services.ts — the salon's own work, or (asset()) a downloaded
+      photo the owner chose. No two services share a photo. A service left
+      out here falls back to its category photo (never the logo). */
   service: {
     // ── Makeup ──────────────────────────────────────────────────────────
     "Natural Beat": {
@@ -110,17 +112,25 @@ export const salonImages = {
       src: lafe("08.35.50 (1)"),
       alt: "Bold blue eyeshadow with winged liner and a pink nude lip, worn with long twists",
     },
+    "Soft Glam for 2": {
+      src: asset("596c1546d75abd6d1ca672f0ec33284c.jpg"),
+      alt: "Soft glam with pink eyeshadow, winged liner, full lashes and a glossy nude lip",
+    },
     "Full Glam for 2": {
       src: lafe("08.35.51"),
       alt: "Smiling bride with gold eyes, a red lip and a pearl hair crown, in front of the La-fe banner",
     },
     "Natural Beat for 4": {
-      src: fresh("WhatsApp Image 2026-10-20 at 09.59.35 (1).jpeg"),
-      alt: "A group of six La-fe clients with their makeup done, in front of the La-fe Beauty Parlor banner",
+      src: asset("Natural Beat for 4.jpg"),
+      alt: "Natural beat with fluffy lashes, sculpted brows and a glossy brown lip",
     },
     "Soft Glam for 4": {
-      src: fresh("WhatsApp Image 2026-10-20 at 09.59.34 (2).jpeg"),
-      alt: "Three La-fe clients outdoors in black dresses, with soft glam makeup",
+      src: asset("Soft Glam for 4.jpg"),
+      alt: "Soft glam with pink eyeshadow, sleek waves and a diamond necklace",
+    },
+    "Full Glam for 4": {
+      src: asset("1c2be9c3583109a282857e664e90ee36.jpg"),
+      alt: "Full glam with gold glitter eyes, a bold red lip and a high bun",
     },
     "Natural + Makeup": {
       src: lafe("08.35.51 (2)"),
@@ -131,14 +141,18 @@ export const salonImages = {
       alt: "Sleek straight bob wig being installed, with a natural hairline",
     },
     "Full Glam + Makeup": {
-      src: lafe("08.35.51 (1)"),
-      alt: "Stylist laying the lace of a wig install, with lashes already applied",
+      src: asset("full-glam-plus-makeup.jpg"),
+      alt: "Sleek bob install with bronze glam eyes and a glossy brown lip",
     },
 
     // ── Lashes ──────────────────────────────────────────────────────────
     "Classic lashes": {
-      src: lafe("08.35.53 (2)"),
-      alt: "La-fe lash technician applying extensions to a client under a ring light",
+      src: asset("Classic lashes.jpg"),
+      alt: "Long, separated classic lash extensions on a brown eye",
+    },
+    "Hybrid lashes": {
+      src: asset("1d2153e5e02c79106df4a6f6831339a9.jpg"),
+      alt: "Wispy, textured hybrid lash set on a hazel eye",
     },
     "Volume lashes": {
       src: lafe("08.35.53 (1)"),
@@ -207,7 +221,7 @@ export const salonImages = {
   ],
 }
 
-/** A service's own photo if it has one, otherwise the La-fe logo — never
-    a stock picture, and never another service's photo. */
-export const serviceImage = (name: string): ImageSlot =>
-  salonImages.service[name] ?? salonImages.logo
+/** A service's own photo, or — for a service added later without one — its
+    category's photo. Never the logo: a service always shows the work. */
+export const serviceImage = (name: string, category?: string): ImageSlot =>
+  salonImages.service[name] ?? (category && salonImages.category[category]) ?? salonImages.category.Makeup
