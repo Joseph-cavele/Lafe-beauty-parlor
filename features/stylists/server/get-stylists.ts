@@ -24,8 +24,8 @@ export async function getStylists(all = false): Promise<Stylist[]> {
   return stylists.map((s) => ({
     id: String(s._id),
     name: s.name,
-    email: s.email,
-    phone: s.phone,
+    email: s.email ?? "",
+    phone: s.phone ?? "",
     bio: s.bio,
     image: s.image,
     workingHours: s.workingHours,

@@ -96,12 +96,12 @@ export function StylistFormDialog({
             </Field>
             <Field orientation="responsive">
               <div className="flex-1">
-                <FieldLabel htmlFor="stylist-email">Email</FieldLabel>
+                <FieldLabel htmlFor="stylist-email">Email (optional)</FieldLabel>
                 <Input id="stylist-email" type="email" {...register("email")} />
                 {errors.email && <FieldError>{errors.email.message}</FieldError>}
               </div>
               <div className="flex-1">
-                <FieldLabel htmlFor="stylist-phone">Phone</FieldLabel>
+                <FieldLabel htmlFor="stylist-phone">Phone (optional)</FieldLabel>
                 <Input id="stylist-phone" {...register("phone")} />
                 {errors.phone && <FieldError>{errors.phone.message}</FieldError>}
               </div>

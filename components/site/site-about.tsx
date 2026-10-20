@@ -94,7 +94,9 @@ export function SiteAbout() {
                     alt={salonImages.salonInterior.alt}
                     fill
                     sizes="(min-width: 1024px) 45vw, 90vw"
-                    className="object-cover"
+                    // Portrait photo in a landscape frame: anchor near the top
+                    // so the La-fe banner and logo stay in view.
+                    className="object-cover object-[50%_15%]"
                   />
                 </motion.div>
 

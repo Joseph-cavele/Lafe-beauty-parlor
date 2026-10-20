@@ -129,7 +129,7 @@ const FEATURED = ["Natural Beat", "Soft Glam", "Wig installation", "Classic lash
 export const featuredServices: FeaturedService[] = FEATURED.map((name) => {
   const s = salonServices.find((x) => x.name === name)
   if (!s) throw new Error(`salon-services: featured service "${name}" is not in the list`)
-  const img = serviceImage(s.name, s.category)
+  const img = serviceImage(s.name)
   return { name: s.name, from: formatPrice(s.price), description: s.description, image: img.src, alt: img.alt }
 })
 
@@ -150,7 +150,7 @@ export const serviceCatalog: CatalogCategory[] = CATEGORY_ORDER.map((category) =
     items: salonServices
       .filter((s) => s.category === category)
       .map((s) => {
-        const img = serviceImage(s.name, s.category)
+        const img = serviceImage(s.name)
         return {
           name: s.name,
           price: formatPrice(s.price),
@@ -166,7 +166,7 @@ export const serviceCatalog: CatalogCategory[] = CATEGORY_ORDER.map((category) =
 export const serviceImageByName: Record<string, { image: string; alt: string }> =
   Object.fromEntries(
     salonServices.map((s) => {
-      const img = serviceImage(s.name, s.category)
+      const img = serviceImage(s.name)
       return [s.name, { image: img.src, alt: img.alt }]
     })
   )

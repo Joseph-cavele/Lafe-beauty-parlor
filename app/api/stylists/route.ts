@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/db"
 import { StylistModel } from "@/lib/models/Stylist"
-import { stylistInputSchema } from "@/features/stylists/schema"
+import { stylistInputSchema, stylistWriteData } from "@/features/stylists/schema"
 import { getStylists } from "@/features/stylists/server/get-stylists"
 import { requireOwner } from "@/lib/auth-guard"
 
@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
   }
 
   await connectDB()
-  const stylist = await StylistModel.create(parsed.data)
+  const { $set } = stylistWriteData(parsed.data)
+  const stylist = await StylistModel.create($set)
 
   return NextResponse.json({ id: String(stylist._id) }, { status: 201 })
 }

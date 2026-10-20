@@ -1,32 +1,25 @@
 /* ══════════════════════════════════════════════════════════════════════
    IMAGE SLOTS — every photograph and the logo the site shows, in one place.
 
-   Sources:
-     /public/assets/   the service photos — one per service, named after it
-                       where possible. Services read their photo from here,
-                       never from the database (no Service document stores
-                       an image; a photo uploaded in the dashboard would
-                       still take priority on /book).
-     /public/Lafe-images/  the salon's own photos of its work (WhatsApp,
-                       2026-10-19) — the "Recent Work" gallery.
-     /public/images/   makeup, lash and nail photos the site owner added and
-     and /public/      confirmed (2026-10-18) as La-fe's own work, so they
-                       may appear in "Recent Work". The hero-*.jpg files and
-                       "Interior deco of salon.jpg" are mood images, not the
-                       salon's work — keep them out of "Recent Work".
+   ONLY La-fe Beauty Parlor's own photos are used (the owner's decision,
+   2026-10-20) — no downloaded or stock images. Sources:
+     /public/Lafe-images/  the salon's photos of its work (WhatsApp, 2026-10-19)
+     /public/new-images/   the real salon, clients, hero and booking photos
+     /public/assets/       now only the Gel toes photos, kept at the owner's
+                           request
 
-   To fill a slot: put the file in /public/images/, change that one path
-   below, and update its `alt` so it describes what the photo shows.
+   A service with no suitable photo of its own shows the La-fe logo rather
+   than a stock picture. To fill a slot: add the salon's photo to one of the
+   folders above, change that one path below, and write an `alt` that says
+   what the photo shows.
    ══════════════════════════════════════════════════════════════════════ */
 
-/** The salon's own work photo in /public/Lafe-images — see the note above. */
+/** The salon's own work photo in /public/Lafe-images. */
 const lafe = (time: string) => encodeURI(`/Lafe-images/WhatsApp Image 2026-10-19 at ${time}.jpeg`)
-/** Service photo in /public/assets — see the note above. */
+/** The salon's own photos in /public/new-images (2026-10-20). */
+const fresh = (file: string) => encodeURI(`/new-images/${file}`)
+/** /public/assets — only the Gel toes photos remain there. */
 const asset = (file: string) => encodeURI(`/assets/${file}`)
-/** Owner-supplied image in /public/images — see the note above. */
-const stock = (file: string) => encodeURI(`/images/${file}`)
-/** Owner-supplied image at the root of /public — see the note above. */
-const pub = (file: string) => encodeURI(`/${file}`)
 
 export type ImageSlot = { src: string; alt: string }
 
@@ -34,139 +27,142 @@ export const salonImages = {
   /** Square logo mark — header, login card, dashboard sidebar. */
   logo: { src: "/La-fe-logo.jpeg", alt: "La-fe Beauty Parlor logo" },
 
-  /** Full-bleed hero backdrop on the home page and /book. */
+  /** Kept for lib/stock-photos.ts — the salon's own hero photo. */
   hero: {
-    src: pub("hero-lashes.jpg"),
-    alt: "Client relaxing with her eyes closed during an eyelash extension",
+    src: fresh("mobile-hero-image.jpeg"),
+    alt: "Client with pink and purple glam makeup, full lashes and a matte pink lip, posing beside a ring light",
   },
 
-  /** About section main frame ("Take a look inside"). 4:3 crop of a 4:5
-      image. Interior decor added by the site owner (2026-10-18) — swap for a
-      photo of the La-fe salon itself when there is one. */
+  /** The hero collage's other two frames (the middle one is heroMobile).
+      Interior 4:3, nails 4:5; tablets and up. Neither is in the gallery. */
+  heroCollage: {
+    interior: {
+      src: fresh("WhatsApp Image 2026-10-20 at 09.59.35 (1).jpeg"),
+      alt: "Six smiling La-fe clients dressed up for an event, in front of the La-fe Beauty Parlor banner",
+    },
+    nails: {
+      src: fresh("WhatsApp Image 2026-10-20 at 10.10.01 (2).jpeg"),
+      alt: "La-fe technician painting a client's toenails while a manicure goes on at the desk behind",
+    },
+  },
+
+  /** About section main frame ("Take a look inside"), 4:3 crop of a 3:4
+      photo — the real La-fe makeup station. Also the booking summary's
+      fallback image. */
   salonInterior: {
-    src: stock("Interior deco of salon.jpg"),
-    alt: "Bright salon interior with curved cream walls, backlit mirrors, petal-shaped pendant lamps and grey styling chairs",
+    src: fresh("About-lafe-beauty-parlor.jpeg"),
+    alt: "The La-fe makeup station: client chair in front of the La-fe Beauty Parlor banner, with a stocked makeup shelf and a ring light",
   },
 
-  /** About section inset and login backdrop. Square. */
+  /** About section inset and login backdrop. Square crop — the real salon. */
   salonStation: {
-    src: pub("hero-interior.jpg"),
-    alt: "Softly lit salon reception with an arched product shelf and a cream armchair",
+    src: fresh("WhatsApp Image 2026-10-20 at 10.10.01.jpeg"),
+    alt: "Inside La-fe Beauty Parlor: the nail desk by the window, a ring light and a black rug on a tiled floor",
   },
 
-  /** One photo per service category: the /services banner slides and the
-      fallback for any service without its own photo below. */
+  /** The hero's glam portrait — alone on phones, the middle of the
+      collage on larger screens. Kept out of the gallery. */
+  heroMobile: {
+    src: fresh("mobile-hero-image.jpeg"),
+    alt: "Client with pink and purple glam makeup, full lashes and a matte pink lip, posing beside a ring light",
+  },
+
+  /** One photo per service category — the /services banner slides. Each
+      is a photo no service card on that page uses. */
   category: {
     Makeup: {
-      src: asset("9aca19b57ad9f49e2a391358da77aca7.jpg"),
-      alt: "Bridal soft glam with bronze smoky eyes, full lashes and glossy nude lips",
+      src: lafe("08.35.50 (2)"),
+      alt: "Smiling client with gold eyes, a berry lip and red French-tip almond nails",
     },
     Lashes: {
-      src: asset("Volume lashes2.jpg"),
-      alt: "Close-up of a client wearing a dense, dark volume lash set",
+      src: fresh("mobile-hero-image.jpeg"),
+      alt: "Client with pink and purple glam makeup and full, fluffy lashes",
     },
     Nails: {
-      src: asset("Nail.jpg"),
-      alt: "Almond nails with red French tips and red flower art",
+      src: lafe("08.35.48"),
+      alt: "Long square nails in glossy red, some with nude French tips and polka-dot accents",
     },
-    /** The salon's own photo — a bob install in progress (not in the gallery). */
     Wigs: {
       src: lafe("08.35.52 (2)"),
       alt: "Stylist melting the lace of a sleek bob wig install with a blow-dryer",
     },
   } as Record<string, ImageSlot>,
 
-  /** Per-service photos from /public/assets, keyed by the exact service
-      name in lib/salon-services.ts. */
+  /** Per-service photos — the salon's own work — keyed by the exact service
+      name in lib/salon-services.ts. No two services share a photo. A
+      service left out here shows the La-fe logo (Soft Glam for 2, Full
+      Glam for 4 and Hybrid lashes: no suitable photo of the salon's own). */
   service: {
     // ── Makeup ──────────────────────────────────────────────────────────
     "Natural Beat": {
-      // The salon's own work (Our Premium Services card).
       src: lafe("08.35.49 (1)"),
       alt: "Client with a soft natural beat, full lashes and a pink nude lip, in front of the La-fe Beauty Parlor sign",
     },
     "Soft Glam": {
-      // The salon's own work (Our Premium Services card).
       src: lafe("08.35.49"),
       alt: "Client in a curly wig with soft glam makeup, full lashes and a berry lip, in front of the La-fe sign",
     },
     "Full Glam": {
-      src: asset("Full Glam.jpg"),
-      alt: "Full glam with shimmery eyes, dramatic lashes and a glossy pink lip",
+      src: lafe("08.35.50"),
+      alt: "Full glam with smoky brown eyes, full lashes and a matte nude lip, with a yellow head wrap",
     },
     "Natural Beat for 2": {
-      src: asset("Natural Beat for 2.jpg"),
-      alt: "Natural beat with bronze eyes, lashes and a glossy nude lip",
-    },
-    "Soft Glam for 2": {
-      src: asset("596c1546d75abd6d1ca672f0ec33284c.jpg"),
-      alt: "Soft glam with pink eyeshadow, winged liner, full lashes and a glossy nude lip",
+      src: lafe("08.35.50 (1)"),
+      alt: "Bold blue eyeshadow with winged liner and a pink nude lip, worn with long twists",
     },
     "Full Glam for 2": {
-      src: asset("Full Glam for 2.jpg"),
-      alt: "Polished makeup with defined lashes and a glossy rose-nude lip",
+      src: lafe("08.35.51"),
+      alt: "Smiling bride with gold eyes, a red lip and a pearl hair crown, in front of the La-fe banner",
     },
     "Natural Beat for 4": {
-      src: asset("Natural Beat for 4.jpg"),
-      alt: "Fluffy lashes, sculpted brows and a glossy brown lip",
+      src: fresh("WhatsApp Image 2026-10-20 at 09.59.35 (1).jpeg"),
+      alt: "A group of six La-fe clients with their makeup done, in front of the La-fe Beauty Parlor banner",
     },
     "Soft Glam for 4": {
-      src: asset("Soft Glam for 4.jpg"),
-      alt: "Soft glam with pink eyeshadow, sleek waves and a diamond necklace",
-    },
-    /* "Full Glam for 4.jpg" is the same shot as "Soft Glam for 4.jpg", so
-       this card uses a different full glam photo. */
-    "Full Glam for 4": {
-      src: asset("1c2be9c3583109a282857e664e90ee36.jpg"),
-      alt: "Full glam with gold glitter eyes, a bold red lip and a high bun",
+      src: fresh("WhatsApp Image 2026-10-20 at 09.59.34 (2).jpeg"),
+      alt: "Three La-fe clients outdoors in black dresses, with soft glam makeup",
     },
     "Natural + Makeup": {
-      src: asset("natural-plus-makeup.jpg"),
-      alt: "Long wavy install with a pink-eyed natural glam look",
+      src: lafe("08.35.51 (2)"),
+      alt: "Wig install with a smooth, melted lace hairline and lashes applied",
     },
     "Soft Glam + Makeup": {
-      src: asset("5fc86b0ed0828183a5160e8ee045cece.jpg"),
-      alt: "Side-swept updo with gold soft glam eyes and full lashes",
+      src: lafe("08.35.53"),
+      alt: "Sleek straight bob wig being installed, with a natural hairline",
     },
     "Full Glam + Makeup": {
-      src: asset("full-glam-plus-makeup.jpg"),
-      alt: "Sleek bob install with bronze glam eyes and a glossy brown lip",
+      src: lafe("08.35.51 (1)"),
+      alt: "Stylist laying the lace of a wig install, with lashes already applied",
     },
 
     // ── Lashes ──────────────────────────────────────────────────────────
     "Classic lashes": {
-      // The salon's own work (Our Premium Services card).
       src: lafe("08.35.53 (2)"),
       alt: "La-fe lash technician applying extensions to a client under a ring light",
     },
-    "Hybrid lashes": {
-      src: asset("1d2153e5e02c79106df4a6f6831339a9.jpg"),
-      alt: "Wispy, textured lash set on a hazel eye",
-    },
     "Volume lashes": {
-      src: asset("Volume lashes.jpg"),
-      alt: "Full volume lash set shown in a hand mirror during the appointment",
+      src: lafe("08.35.53 (1)"),
+      alt: "La-fe lash technician preparing extensions for a client under a ring light",
     },
 
     // ── Nails ───────────────────────────────────────────────────────────
     "Gel overlay": {
-      // The salon's own work (Our Premium Services card).
       src: lafe("08.35.46"),
       alt: "Short almond nails in sheer pink gel with black polka-dot French tips and white 3D flowers",
     },
     "Tips & Gel": {
-      src: asset("tips-and-gel.jpg"),
-      alt: "Short square French tips with small white heart details",
+      src: lafe("08.35.47"),
+      alt: "Short almond nails in sheer pink with fine gold wire outlines, held over the La-fe Beauty Parlor sign",
     },
     "Polygel normal tips": {
-      src: asset("Polygel normal tips.jpg"),
-      alt: "Long coffin nails in red and white with snowflake art and glitter",
+      src: lafe("08.35.48 (1)"),
+      alt: "Long coffin nails in hot pink and nude with polka dots and white snowflake art",
     },
     "Polygel XXL": {
-      // The salon's own work (Our Premium Services card).
       src: lafe("08.35.47 (2)"),
       alt: "Extra-long square nails in glossy black and black-and-white marble",
     },
+    /* Kept at the owner's request. */
     "Gel toes": {
       src: asset("Gel toes.jpg"),
       alt: "Toes in mauve gel with white French tips and a diamond toe ring",
@@ -179,21 +175,16 @@ export const salonImages = {
     },
   } as Record<string, ImageSlot>,
 
-  /** Salon interior — the /book page hero and the "Book your visit" slide
-      on /services. Interior decor, not the La-fe salon: replace with a photo
-      of the real salon when there is one. */
+  /** The /book page hero and the "Book your visit" slide on /services —
+      La-fe clients in their finished makeup. */
   bookingBanner: {
-    src: stock("Interior deco of salon.jpg"),
-    alt: "Bright salon interior with curved cream walls, backlit mirrors, petal-shaped pendant lamps and grey styling chairs",
+    src: fresh("booking-image.jpeg"),
+    alt: "Five La-fe clients in black, each wearing a different colourful glam makeup look",
   },
 
-  /** "Recent work" gallery — the salon's own photos (public/Lafe-images),
-      mixed across nails, makeup, wig installs and lashes. Photos already on
-      an Our Premium Services card (08.35.49, 08.35.49 (1), 08.35.46,
-      08.35.47 (2), 08.35.53 (2), 08.35.52 (1)) and the Wigs category photo
-      (08.35.52 (2)) are kept out so nothing shows twice. Also left out: the
-      exact duplicate 08.35.45 (1) and the "Girl of the Moment" poster
-      (08.35.49 (2)), whose text would crop badly. */
+  /** "Recent work" gallery (home page) — the salon's own photos. Nothing
+      here repeats another photo on the home page: the Our Premium Services
+      cards, the hero collage and the About photos are all kept out. */
   gallery: [
     { src: lafe("08.35.47"), label: "Gold Wire Nail Art", alt: "Short almond nails in sheer pink with fine gold wire outlines, held over the La-fe Beauty Parlor sign" },
     { src: lafe("08.35.46 (1)"), label: "Minimal Nail Art", alt: "Short natural nails with tiny minimalist line art and a blue accent dot" },
@@ -207,7 +198,7 @@ export const salonImages = {
     { src: lafe("08.35.52"), label: "Wig Install in Progress", alt: "Stylist melting the lace of a curly wig install with a blow-dryer" },
     { src: lafe("08.35.48 (2)"), label: "Neon Swirls", alt: "Long almond nails in coral and nude with neon orange and white swirls, over the La-fe sign" },
     { src: lafe("08.35.53 (1)"), label: "Lash Appointment", alt: "Lash technician in uniform preparing extensions for a client under a ring light" },
-    { src: lafe("08.35.50 (3)"), label: "Pink Glam", alt: "Pink and purple eyeshadow with full lashes and a matte pink lip" },
+    { src: fresh("WhatsApp Image 2026-10-20 at 09.59.34 (2).jpeg"), label: "Glam Day Out", alt: "Three La-fe clients outdoors in black dresses, with soft glam makeup" },
     { src: lafe("08.35.47 (1)"), label: "Teal & Gold Foil", alt: "Long coffin nails in glossy teal with a gold-foil accent nail" },
     { src: lafe("08.35.51 (2)"), label: "Melted Lace Hairline", alt: "Wig install with a smooth, melted lace hairline" },
     { src: lafe("08.35.50 (2)"), label: "Glam & Red French", alt: "Smiling client with gold eyes, a berry lip and red French-tip almond nails" },
@@ -216,10 +207,7 @@ export const salonImages = {
   ],
 }
 
-/** The category photo for a service, falling back to the Makeup slot. */
-export const categoryImage = (category: string | undefined): ImageSlot =>
-  (category && salonImages.category[category]) || salonImages.category.Makeup
-
-/** A service's own photo if it has one, otherwise its category's. */
-export const serviceImage = (name: string, category: string | undefined): ImageSlot =>
-  salonImages.service[name] ?? categoryImage(category)
+/** A service's own photo if it has one, otherwise the La-fe logo — never
+    a stock picture, and never another service's photo. */
+export const serviceImage = (name: string): ImageSlot =>
+  salonImages.service[name] ?? salonImages.logo

@@ -3,8 +3,10 @@ import { Schema, model, models, type InferSchemaType } from "mongoose"
 const stylistSchema = new Schema(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    phone: { type: String, required: true },
+    /* Optional: not every stylist has an email. Unique among the stylists
+       that do — `sparse` leaves the rest out of the index. */
+    email: { type: String, unique: true, sparse: true },
+    phone: { type: String, default: "" },
     bio: { type: String },
     image: { type: String },
     workingHours: { type: String },

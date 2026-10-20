@@ -1,8 +1,7 @@
-// Images used by the booking flow. These are the same slots as the marketing
-// site (lib/salon-assets.ts) — currently labelled placeholders until the
-// salon supplies approved photos. Kept as its own module so the booking
-// wizard's imports did not change in the rebrand.
-import { categoryImage, salonImages } from "./salon-assets"
+// Images used by the booking flow — the same slots as the marketing site
+// (lib/salon-assets.ts), so only the salon's own photos. Kept as its own
+// module so the booking wizard's imports did not change in the rebrand.
+import { salonImages } from "./salon-assets"
 
 export const stockPhotos = {
   hero: salonImages.hero.src,
@@ -12,7 +11,8 @@ export const stockPhotos = {
   stylistHeadshots: [] as string[],
 }
 
-/** Fallback thumbnail for a service, by category. */
-export function serviceThumb(category: string | undefined) {
-  return categoryImage(category).src
+/** Last-resort thumbnail for a service with no photo: the La-fe logo, so a
+    service never borrows another's picture or a stock image. */
+export function serviceThumb() {
+  return salonImages.logo.src
 }

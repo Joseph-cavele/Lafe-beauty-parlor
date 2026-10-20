@@ -13,22 +13,13 @@ import { salonImages } from "@/lib/salon-assets"
 import { formatCurrency } from "@/lib/currency"
 import { salonServices, type SalonServiceCategory } from "@/lib/salon-services"
 
-/* IMAGE SLOTS — the collage. These are AI-generated mood images, not the
-   salon itself: swap in real La-fe photos (same crops) when there are some.
-   interior 4:3, lashes and nails 4:5. On phones only the lashes frame shows. */
+/* IMAGE SLOTS — the collage, all the salon's own photos (lib/salon-assets):
+   interior 4:3 (tablets and up), the glam portrait 4:5 (every size — on
+   phones it fills the frame alone), nails 4:5 (tablets and up). */
 const collage = {
-  interior: {
-    src: "/hero-interior.jpg",
-    alt: "Softly lit salon reception with an arched product shelf and a cream armchair",
-  },
-  lashes: {
-    src: "/hero-lashes.jpg",
-    alt: "Client relaxing with her eyes closed during an eyelash extension",
-  },
-  nails: {
-    src: "/hero-nails.jpg",
-    alt: "Hand with a glossy nude manicure and thin gold rings resting on a towel",
-  },
+  interior: salonImages.heroCollage.interior,
+  lashes: salonImages.heroMobile,
+  nails: salonImages.heroCollage.nails,
 }
 
 /* The organic outline of the collage: a big sweep top-left and bottom-left,
@@ -236,8 +227,8 @@ export function SiteHero() {
 
         {/* ── Collage ────────────────────────────────────────────────
             Three photos in one organic frame with ivory gutters, and a
-            gold hairline outline offset around it. Phones get the lashes
-            frame alone; sm and up get the full collage. */}
+            gold hairline outline offset around it. Phones get one frame with
+            the salon's own photo; sm and up get the full collage. */}
         <motion.div
           initial="hidden"
           animate="show"
@@ -261,7 +252,7 @@ export function SiteHero() {
                 fill
                 priority
                 sizes="(min-width: 1024px) 540px, 460px"
-                className="object-cover object-[50%_45%]"
+                className="object-cover object-[50%_25%]"
               />
             </div>
             <div className="relative col-span-2 row-span-2 overflow-hidden rounded-[18px] sm:col-span-1 sm:row-span-1">
@@ -271,7 +262,7 @@ export function SiteHero() {
                 fill
                 priority
                 sizes="(min-width: 640px) 270px, 320px"
-                className="object-cover object-[55%_45%]"
+                className="object-cover object-[50%_30%]"
               />
             </div>
             <div className="relative hidden overflow-hidden rounded-[18px] sm:block">
@@ -280,7 +271,7 @@ export function SiteHero() {
                 alt={collage.nails.alt}
                 fill
                 sizes="270px"
-                className="object-cover object-[60%_60%]"
+                className="object-cover object-[50%_70%]"
               />
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/db"
 import { StylistModel } from "@/lib/models/Stylist"
-import { stylistInputSchema } from "@/features/stylists/schema"
+import { stylistInputSchema, stylistWriteData } from "@/features/stylists/schema"
 import { requireOwner } from "@/lib/auth-guard"
 
 export async function PATCH(
@@ -23,7 +23,7 @@ export async function PATCH(
   }
 
   await connectDB()
-  const stylist = await StylistModel.findByIdAndUpdate(id, parsed.data, {
+  const stylist = await StylistModel.findByIdAndUpdate(id, stylistWriteData(parsed.data), {
     returnDocument: "after",
   })
 
