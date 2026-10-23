@@ -9,6 +9,42 @@ import { SiteServices } from "@/components/site/site-services"
 import { SiteTestimonials } from "@/components/site/site-testimonials"
 import { SiteWhyUs } from "@/components/site/site-why-us"
 import { getHomeCombos, groupCombos, makeupSpecial } from "@/lib/salon-combos"
+import { salonImages } from "@/lib/salon-assets"
+import {
+  SALON_ADDRESS,
+  SALON_EMAIL,
+  SALON_HOURS,
+  SALON_NAME,
+  SALON_PHONE,
+  SALON_SITE_URL,
+  SALON_SOCIALS,
+} from "@/lib/salon-contact"
+
+/* What Google reads to show the salon's logo, hours and phone in search.
+   Built only from the contact details in lib/salon-contact.ts. */
+const salonJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BeautySalon",
+  name: SALON_NAME,
+  url: SALON_SITE_URL,
+  logo: `${SALON_SITE_URL}${salonImages.logo.src}`,
+  image: `${SALON_SITE_URL}/opengraph-image.jpg`,
+  telephone: SALON_PHONE,
+  email: SALON_EMAIL,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: SALON_ADDRESS,
+    addressRegion: "North West",
+    addressCountry: "ZA",
+  },
+  openingHoursSpecification: {
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    opens: SALON_HOURS.open,
+    closes: SALON_HOURS.close,
+  },
+  sameAs: SALON_SOCIALS.map((s) => s.url).filter(Boolean),
+}
 
 /* The combos band reads the services cache, which every service/combo save
    in the dashboard revalidates by tag. This bounds staleness if that tag is
@@ -29,6 +65,11 @@ export default async function Home() {
 
   return (
     <div className="flex flex-1 flex-col bg-brand-bg text-brand-text selection:bg-brand-accent selection:text-brand-on-accent">
+      <script
+        type="application/ld+json"
+        // `<` escaped so no value can close the script tag (Next's JSON-LD guide).
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(salonJsonLd).replace(/</g, "\\u003c") }}
+      />
       <SiteHeader active="Home" logoHref="/login" />
 
       <SiteHero />

@@ -12,6 +12,10 @@
 
 export const SALON_NAME = "La-fe Beauty Parlor"
 
+/** The live site's canonical address (the bare domain redirects here), for
+    the sitemap, robots.txt and Google's business data. No trailing slash. */
+export const SALON_SITE_URL = "https://www.lafebeauty.co.za"
+
 /** The person customers deal with. */
 export const SALON_CONTACT_PERSON = "Luyanda Thabethe"
 
