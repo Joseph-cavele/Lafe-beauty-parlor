@@ -11,6 +11,10 @@ const serviceSchema = new Schema(
     duration: { type: Number, required: true },
     category: { type: String, default: "Makeup" },
     image: { type: String },
+    /* What a combo bundles, one line per item — the poster's checklist
+       ("28" Human Blend Wig", "Wig Installation", …). Empty for ordinary
+       services. */
+    includes: { type: [String], default: undefined },
     /* Stable key for scripts/seed.ts, which upserts on { category, slug } so
        re-running it never duplicates a service. Optional: services created
        in the dashboard don't need one. */

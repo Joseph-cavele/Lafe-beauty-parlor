@@ -24,6 +24,7 @@ import {
 import { useServices } from "@/features/bookings/hooks/use-services"
 import { useDeleteService } from "@/features/services/hooks/use-delete-service"
 import { ServiceFormDialog } from "@/features/services/components/service-form-dialog"
+import { COMBO_CATEGORY, type SERVICE_CATEGORIES } from "@/features/services/schema"
 import { formatPrice } from "@/lib/currency"
 import type { Service } from "@/types"
 
@@ -34,8 +35,22 @@ function formatDuration(minutes: number) {
   return rest ? `${hours}h ${rest}m` : `${hours}h`
 }
 
-export function ServicesManagement() {
-  const { data, isLoading, isError } = useServices()
+/**
+ * With `category`, the list and the add/edit form are scoped to that one
+ * category — the Combos page is this component with `category="Combos"`.
+ * Combos are ordinary services underneath, so they book, pay and report
+ * exactly like the rest.
+ */
+export function ServicesManagement({
+  category,
+}: {
+  category?: (typeof SERVICE_CATEGORIES)[number]
+} = {}) {
+  const { data: all, isLoading, isError } = useServices()
+  const data = category ? all?.filter((s) => s.category === category) : all
+  const isCombos = category === COMBO_CATEGORY
+  const noun = isCombos ? "combo" : "service"
+  const Noun = isCombos ? "Combo" : "Service"
   const deleteService = useDeleteService()
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<Service | undefined>(undefined)
@@ -55,20 +70,20 @@ export function ServicesManagement() {
     if (!deleting) return
     deleteService.mutate(deleting.id, {
       onSuccess: () => {
-        toast.success("Service deleted")
+        toast.success(`${Noun} deleted`)
         setDeleting(undefined)
       },
-      onError: () => toast.error("Could not delete service. Please try again."),
+      onError: () => toast.error(`Could not delete ${noun}. Please try again.`),
     })
   }
 
   return (
     <Card>
       <CardHeader className="flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle>Services Management</CardTitle>
+        <CardTitle>{Noun}s Management</CardTitle>
         <Button size="sm" onClick={openCreate}>
           <Plus className="size-4" />
-          Add Service
+          Add {Noun}
         </Button>
       </CardHeader>
       <CardContent>
@@ -78,11 +93,11 @@ export function ServicesManagement() {
           </div>
         ) : isError || !data ? (
           <p className="py-8 text-center text-sm text-destructive">
-            Could not load services.
+            Could not load {noun}s.
           </p>
         ) : data.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            No services yet. Add your first one.
+            No {noun}s yet. Add your first one.
           </p>
         ) : (
           <>
@@ -98,11 +113,16 @@ export function ServicesManagement() {
                     <span className="text-xs text-muted-foreground">
                       {formatPrice(service.price)} · {formatDuration(service.duration)}
                     </span>
+                    {isCombos && !!service.includes?.length && (
+                      <span className="mt-0.5 text-xs text-muted-foreground">
+                        {service.includes.join(" · ")}
+                      </span>
+                    )}
                   </div>
                   <div className="flex shrink-0 items-center gap-1">
                     <button
                       type="button"
-                      aria-label="Edit service"
+                      aria-label={`Edit ${noun}`}
                       onClick={() => openEdit(service)}
                       className="inline-flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                     >
@@ -110,7 +130,7 @@ export function ServicesManagement() {
                     </button>
                     <button
                       type="button"
-                      aria-label="Delete service"
+                      aria-label={`Delete ${noun}`}
                       onClick={() => setDeleting(service)}
                       className="inline-flex size-7 items-center justify-center rounded-lg text-destructive hover:bg-destructive/10"
                     >
@@ -126,7 +146,7 @@ export function ServicesManagement() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Service</TableHead>
+                    <TableHead>{Noun}</TableHead>
                     <TableHead>Price</TableHead>
                     <TableHead>Duration</TableHead>
                     <TableHead className="w-20" />
@@ -135,14 +155,21 @@ export function ServicesManagement() {
                 <TableBody>
                   {data.map((service) => (
                     <TableRow key={service.id}>
-                      <TableCell className="font-medium">{service.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {service.name}
+                        {isCombos && !!service.includes?.length && (
+                          <span className="block max-w-md truncate text-xs font-normal text-muted-foreground">
+                            {service.includes.join(" · ")}
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell>{formatPrice(service.price)}</TableCell>
                       <TableCell>{formatDuration(service.duration)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
-                            aria-label="Edit service"
+                            aria-label={`Edit ${noun}`}
                             onClick={() => openEdit(service)}
                             className="inline-flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
                           >
@@ -150,7 +177,7 @@ export function ServicesManagement() {
                           </button>
                           <button
                             type="button"
-                            aria-label="Delete service"
+                            aria-label={`Delete ${noun}`}
                             onClick={() => setDeleting(service)}
                             className="inline-flex size-7 items-center justify-center rounded-lg text-destructive hover:bg-destructive/10"
                           >
@@ -167,14 +194,19 @@ export function ServicesManagement() {
         )}
       </CardContent>
 
-      <ServiceFormDialog open={formOpen} onOpenChange={setFormOpen} service={editing} />
+      <ServiceFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        service={editing}
+        category={category}
+      />
 
       <Dialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(undefined)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete service</DialogTitle>
+            <DialogTitle>Delete {noun}</DialogTitle>
             <DialogDescription>
-              This will permanently remove &quot;{deleting?.name}&quot; from your services.
+              This will permanently remove &quot;{deleting?.name}&quot; from your {noun}s.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

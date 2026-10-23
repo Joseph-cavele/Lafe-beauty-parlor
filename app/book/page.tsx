@@ -10,6 +10,8 @@ import {
 import { SiteHeader } from "@/components/site/site-header"
 import { SiteFooter } from "@/components/site/site-footer"
 import { BookingWizard } from "@/features/bookings/components/booking-wizard"
+import { SERVICE_CATEGORIES } from "@/features/services/schema"
+import { getServices } from "@/features/services/server/get-services"
 import { salonImages } from "@/lib/salon-assets"
 
 const heroSteps = [
@@ -25,7 +27,37 @@ const features = [
   { icon: Sparkles, title: "Best Experience", text: "Relax and enjoy a premium salon experience." },
 ]
 
-export default function BookPage() {
+type Category = (typeof SERVICE_CATEGORIES)[number]
+const isCategory = (value?: string): value is Category =>
+  SERVICE_CATEGORIES.includes(value as Category)
+
+/* /book?service=<id> (a combo's "Book" button on the home page) opens the
+   wizard with that service chosen; /book?category=Makeup opens that tab.
+   Both are checked against the real list, so a stale or edited link just
+   falls back to the normal empty wizard. */
+async function preselection(params: { service?: string | string[]; category?: string | string[] }) {
+  const serviceId = typeof params.service === "string" ? params.service : undefined
+  const category = typeof params.category === "string" ? params.category : undefined
+
+  if (serviceId) {
+    const service = (await getServices().catch(() => [])).find((s) => s.id === serviceId)
+    if (service) {
+      return {
+        initialServiceId: service.id,
+        initialCategory: isCategory(service.category) ? service.category : undefined,
+      }
+    }
+  }
+  return { initialCategory: isCategory(category) ? category : undefined }
+}
+
+export default async function BookPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const initial = await preselection(await searchParams)
+
   return (
     <div className="flex flex-1 flex-col bg-brand-bg text-brand-text">
       <SiteHeader />
@@ -86,10 +118,10 @@ export default function BookPage() {
         </div>
       </section>
 
-      {/* Wizard */}
-      <section className="px-4 py-12 sm:px-6 sm:py-16">
+      {/* Wizard — #booking is where the home page's combo buttons land. */}
+      <section id="booking" className="scroll-mt-20 px-4 py-12 sm:px-6 sm:py-16">
         <div className="mx-auto max-w-7xl">
-          <BookingWizard />
+          <BookingWizard {...initial} />
         </div>
       </section>
 

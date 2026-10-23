@@ -192,6 +192,28 @@ export const salonImages = {
       src: lafeFile("wig installation1.jpeg"),
       alt: "La-fe client in a long, curly human-blend wig with a full facebeat, shown twice — close up and dressed for an event",
     },
+
+    // ── Combos ──────────────────────────────────────────────────────────
+    "Wig & Makeup Combo": {
+      src: lafe("08.35.49 (2)"),
+      alt: "Girl of the Moment: a La-fe client in a long, wavy human blend wig with a full facebeat, close up and dressed for an event",
+    },
+    "Gel overlay combo (hands & toes)": {
+      src: asset("Gel Toes4.jpg"),
+      alt: "Toes in lilac gel with white French tips and silver glitter on the big toes",
+    },
+    "Tips combo (hands & toes)": {
+      src: asset("Gel Toes6.jpg"),
+      alt: "Matching square French-tip nails on hands and toes, with rhinestone outlines and white 3D flowers",
+    },
+    "Gel overlay + lashes combo": {
+      src: lafe("08.35.50 (3)"),
+      alt: "Client with pink and purple eyeshadow, full fluffy lashes, a pink matte lip and short neat nails",
+    },
+    "Tips + lashes combo": {
+      src: lafe("08.35.53 (2)"),
+      alt: "La-fe lash technician applying lash extensions to a client lying under a ring light",
+    },
   } as Record<string, ImageSlot>,
 
   /** The /book page hero and the "Book your visit" slide on /services —

@@ -17,6 +17,8 @@ export interface Service {
   duration: number
   category?: string
   image?: string
+  /** A combo's checklist of what it bundles. */
+  includes?: string[]
 }
 
 export interface Stylist {

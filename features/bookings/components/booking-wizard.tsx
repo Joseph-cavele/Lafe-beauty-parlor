@@ -97,10 +97,23 @@ function formatDate(iso: string) {
 
 const todayISO = () => new Date().toISOString().split("T")[0]
 
-export function BookingWizard() {
+/**
+ * `initialServiceId` / `initialCategory` come from /book?service=… links —
+ * the home page's per-combo "Book" buttons — and only set where the wizard
+ * starts: that service already chosen, its category's tab open. app/book
+ * checks both against the real service list before passing them in.
+ */
+export function BookingWizard({
+  initialServiceId,
+  initialCategory,
+}: {
+  initialServiceId?: string
+  initialCategory?: (typeof SERVICE_CATEGORIES)[number]
+} = {}) {
   const [step, setStep] = useState(0)
-  const [activeCategory, setActiveCategory] =
-    useState<(typeof SERVICE_CATEGORIES)[number]>(DEFAULT_SERVICE_CATEGORY)
+  const [activeCategory, setActiveCategory] = useState<(typeof SERVICE_CATEGORIES)[number]>(
+    initialCategory ?? DEFAULT_SERVICE_CATEGORY
+  )
   const [submitted, setSubmitted] = useState(false)
 
   const {
@@ -133,7 +146,7 @@ export function BookingWizard() {
       customerPhone: "",
       // Overwritten by whichever finish button is pressed.
       paymentMethod: "IN_PERSON",
-      serviceIds: [],
+      serviceIds: initialServiceId ? [initialServiceId] : [],
       stylistId: "",
       bookingDate: "",
       bookingTime: "",

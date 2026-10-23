@@ -16,6 +16,7 @@ async function fetchServices(): Promise<Service[]> {
     duration: s.duration,
     category: s.category ?? DEFAULT_SERVICE_CATEGORY,
     image: s.image,
+    includes: s.includes?.length ? s.includes : undefined,
   }))
 }
 

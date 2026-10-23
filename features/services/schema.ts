@@ -6,7 +6,7 @@ import { z } from "zod"
    category as a plain string, so change a name here and the services filed
    under the old one drop out of the booking wizard's tabs until they are
    re-filed. Add freely; rename deliberately. */
-export const SERVICE_CATEGORIES = ["Makeup", "Lashes", "Nails", "Wigs"] as const
+export const SERVICE_CATEGORIES = ["Makeup", "Lashes", "Nails", "Wigs", "Combos"] as const
 
 /**
  * What a service falls back to when its category is missing or unrecognised.
@@ -34,6 +34,16 @@ export const serviceInputSchema = z.object({
      string round-trips to the model as "no image", where `undefined` would
      leave the previous URL in place on an update. */
   image: z.string().trim().url("Enter a valid image URL").or(z.literal("")).optional(),
+  /* A combo's checklist. Blank lines from the dashboard's one-per-line
+     textarea are dropped here, so they never reach the database. */
+  includes: z
+    .array(z.string().trim())
+    .transform((items) => items.filter(Boolean))
+    .refine((items) => items.length <= 12, "Up to 12 items")
+    .optional(),
 })
+
+/** The category the dashboard's Combos page manages. */
+export const COMBO_CATEGORY: (typeof SERVICE_CATEGORIES)[number] = "Combos"
 
 export type ServiceInputValues = z.infer<typeof serviceInputSchema>

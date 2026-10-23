@@ -35,12 +35,15 @@ export const SALON_EMAIL = "lafebeauty0@gmail.com"
 /** As printed on the site. */
 export const SALON_ADDRESS = "Phokeng"
 
-/** What the map is asked to find — country spelled out so the geocoder
-    doesn't pick a place of the same name elsewhere. */
-export const SALON_MAP_ADDRESS = "Phokeng, North West, South Africa"
+/** Where the map pin and "Get directions" point: the salon's spot in
+    Phokeng, by St Jordan Faith Mission Church, taken from the salon's own
+    Google Maps link. Coordinates rather than an address — searching for
+    "Phokeng, North West, South Africa" dropped the pin in the middle of
+    town, not at the salon. */
+export const SALON_MAP_COORDS = "-25.5919633,27.1708605"
 
 /** Pre-encoded, because both the map embed and the directions link use it. */
-export const SALON_MAP_QUERY = encodeURIComponent(SALON_MAP_ADDRESS)
+export const SALON_MAP_QUERY = encodeURIComponent(SALON_MAP_COORDS)
 
 /**
  * Opening hours. Also the booking window: the wizard offers start times from

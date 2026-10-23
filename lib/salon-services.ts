@@ -15,7 +15,7 @@ import { formatPrice } from "./currency"
 import { salonImages, serviceImage } from "./salon-assets"
 
 /** Must match SERVICE_CATEGORIES in features/services/schema.ts. */
-export type SalonServiceCategory = "Makeup" | "Lashes" | "Nails" | "Wigs"
+export type SalonServiceCategory = "Makeup" | "Lashes" | "Nails" | "Wigs" | "Combos"
 
 export type SalonService = {
   name: string
@@ -25,6 +25,8 @@ export type SalonService = {
   /** Minutes — see the note at the top. */
   duration: number
   description: string
+  /** Combos only: the poster's checklist of what's included. */
+  includes?: string[]
 }
 
 /** Minutes. Every service is a 2-hour appointment. */
@@ -75,6 +77,14 @@ export const salonServices: SalonService[] = [
      re-run the seed) or in the dashboard once the salon confirms it. The
      "+ Makeup" packages above cover an installation done with makeup. */
   { name: "Wig installation", category: "Wigs", price: null, duration: TWO_HOURS, description: "Lace wig installation with a natural-looking, melted hairline, styled to finish." },
+
+  // ── Combos — Combo Special and Nails & Lashes Combo Special posters ──
+  /* The Makeup Special poster's packages are the Makeup entries above. */
+  { name: "Wig & Makeup Combo", category: "Combos", price: 1500, duration: TWO_HOURS, description: `A 28" human blend wig, wig installation, wig styling (optional) and makeup — Natural Beat, Soft Glam or Full Glam. ${MAKEUP}`, includes: ['28" Human Blend Wig', "Wig Installation", "Wig Styling (optional)", "Makeup — Soft / Natural / Full Glam"] },
+  { name: "Gel overlay combo (hands & toes)", category: "Combos", price: 350, duration: TWO_HOURS, description: "Gel overlay on your hands and gel on your toes, in one visit.", includes: ["Gel overlay — hands", "Gel — toes"] },
+  { name: "Tips combo (hands & toes)", category: "Combos", price: 400, duration: TWO_HOURS, description: "Tips on your hands and toes, finished in gel, in one visit.", includes: ["Tips — hands", "Tips — toes"] },
+  { name: "Gel overlay + lashes combo", category: "Combos", price: 700, duration: TWO_HOURS, description: `Gel overlay with a lash installation — choose classic, hybrid or volume. ${LASHES}`, includes: ["Gel overlay", "Lash installation — classic / hybrid / volume"] },
+  { name: "Tips + lashes combo", category: "Combos", price: 800, duration: TWO_HOURS, description: `Tips with a lash installation — choose classic, hybrid or volume. ${LASHES}`, includes: ["Tips", "Lash installation — classic / hybrid / volume"] },
 ]
 
 /** URL segment for a service — also half of the seed's upsert key. */
@@ -97,7 +107,7 @@ export type ServiceCategory = {
   items: ServiceItem[]
 }
 
-const CATEGORY_ORDER: SalonServiceCategory[] = ["Makeup", "Lashes", "Nails", "Wigs"]
+const CATEGORY_ORDER: SalonServiceCategory[] = ["Makeup", "Lashes", "Nails", "Wigs", "Combos"]
 
 export const serviceCategories: ServiceCategory[] = CATEGORY_ORDER.map((category) => ({
   title: category,

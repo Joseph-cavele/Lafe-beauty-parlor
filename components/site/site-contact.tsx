@@ -177,8 +177,14 @@ export function SiteContact() {
     variants: fadeUp(reduce, delay, distance),
   })
 
-  const inputClass =
-    "w-full rounded-[12px] border border-brand-line bg-brand-surface px-4 py-3 font-ui text-sm text-brand-text outline-none transition-colors placeholder:text-brand-muted/60 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/25"
+  /* Width is kept out of the shared look on purpose. The dial-code select
+     used to append `w-auto` to a string that already had `w-full`; both are
+     single-class utilities, so whichever Tailwind emits later wins — and
+     `w-full` did. With `shrink-0` the select then took the whole row and
+     squeezed the phone input to ~34px, too narrow to tap or type into. */
+  const fieldClass =
+    "rounded-[12px] border border-brand-line bg-brand-surface px-4 py-3 font-ui text-sm text-brand-text outline-none transition-colors placeholder:text-brand-muted/60 focus:border-brand-accent focus:ring-2 focus:ring-brand-accent/25"
+  const inputClass = `w-full ${fieldClass}`
 
   const labelClass = "block font-ui text-xs font-semibold text-brand-text"
 
@@ -220,6 +226,10 @@ export function SiteContact() {
             <motion.form
               {...reveal(0.2, 24)}
               onSubmit={handleSubmit(onSubmit, onInvalid)}
+              // Until the page's JavaScript loads, a submit is the browser's
+              // own — and its default GET put the name, email and phone
+              // number in the address bar (and so in history and logs).
+              method="post"
               noValidate
               className="mt-9 flex flex-col gap-5"
             >
@@ -295,7 +305,7 @@ export function SiteContact() {
                 <div className="mt-2 flex gap-2">
                   <select
                     aria-label="Country dial code"
-                    className={`${inputClass} w-auto shrink-0 pr-2`}
+                    className={`${fieldClass} w-auto shrink-0 pr-2`}
                     {...register("dialCode")}
                   >
                     {DIAL_CODES.map((entry) => (
@@ -312,7 +322,9 @@ export function SiteContact() {
                     placeholder="00 000 0000"
                     aria-invalid={!!errors.phone}
                     aria-describedby={errors.phone ? "contact-phone-error" : undefined}
-                    className={inputClass}
+                    // min-w-0: an input's intrinsic width would otherwise stop
+                    // it shrinking beside the select on a narrow phone.
+                    className={`${fieldClass} min-w-0 flex-1`}
                     {...register("phone")}
                   />
                 </div>

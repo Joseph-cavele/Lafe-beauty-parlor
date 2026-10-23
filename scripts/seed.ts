@@ -20,9 +20,9 @@ import {
               category are kept in step with lib/salon-services.ts. A
               confirmed price there is always applied; for a "price on
               request" service the seed never touches the price, so a price
-              entered later in the dashboard survives a re-run. Description
-              and duration are set only when the service is first created,
-              so dashboard edits to those survive too.
+              entered later in the dashboard survives a re-run. Description,
+              duration and a combo's checklist are set only when the service
+              is first created, so dashboard edits to those survive too.
    Stylist    Luyanda Thabethe, upserted by email, offered every service.
    Owner      dashboard login for OWNER_EMAIL (.env), upserted by email.
               No password: the owner signs in with a one-time code emailed
@@ -53,7 +53,11 @@ async function seed() {
               slug,
               ...(s.price !== null ? { price: s.price } : {}),
             },
-            $setOnInsert: { description: s.description, duration: s.duration },
+            $setOnInsert: {
+              description: s.description,
+              duration: s.duration,
+              ...(s.includes ? { includes: s.includes } : {}),
+            },
           },
           upsert: true,
         },
