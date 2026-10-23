@@ -148,7 +148,7 @@ export async function confirmPaidBooking(reference: string): Promise<ConfirmOutc
     }
   }
 
-  revalidateTag("dashboard", "max")
+  revalidateTag("dashboard", { expire: 0 })
 
   return { outcome: "confirmed", bookingId }
 }

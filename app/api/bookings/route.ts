@@ -208,7 +208,7 @@ export async function POST(req: NextRequest) {
   }
 
   // A new booking changes the dashboard's counts, revenue and charts.
-  revalidateTag("dashboard", "max")
+  revalidateTag("dashboard", { expire: 0 })
 
   return NextResponse.json(
     { id: String(booking._id), amount, paymentMethod },

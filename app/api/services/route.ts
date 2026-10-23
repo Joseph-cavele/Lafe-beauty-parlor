@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
 
   // A new service changes both the services list and the dashboard's
   // services-performance/revenue figures.
-  revalidateTag("services", "max")
-  revalidateTag("dashboard", "max")
+  revalidateTag("services", { expire: 0 })
+  revalidateTag("dashboard", { expire: 0 })
 
   return NextResponse.json({ id: String(service._id) }, { status: 201 })
 }

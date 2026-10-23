@@ -56,7 +56,7 @@ export async function PATCH(
   await NotificationModel.updateMany({ bookingId: id, read: false }, { read: true })
 
   // Status changes move bookings between the dashboard's counts and revenue.
-  revalidateTag("dashboard", "max")
+  revalidateTag("dashboard", { expire: 0 })
 
   const serviceNames = booking.services.map((s) => s.name)
 

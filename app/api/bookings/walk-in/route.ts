@@ -123,7 +123,7 @@ export async function POST(req: Request) {
   })
 
   // Counts, revenue and charts on the dashboard all move.
-  revalidateTag("dashboard", "max")
+  revalidateTag("dashboard", { expire: 0 })
 
   return NextResponse.json(
     { id: String(booking._id), customerId: String(customer._id), customerName: customer.name },

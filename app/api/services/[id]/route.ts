@@ -38,8 +38,8 @@ export async function PATCH(
     return NextResponse.json({ error: "Service not found" }, { status: 404 })
   }
 
-  revalidateTag("services", "max")
-  revalidateTag("dashboard", "max")
+  revalidateTag("services", { expire: 0 })
+  revalidateTag("dashboard", { expire: 0 })
 
   return NextResponse.json({ id: String(service._id) })
 }
@@ -59,8 +59,8 @@ export async function DELETE(
     return NextResponse.json({ error: "Service not found" }, { status: 404 })
   }
 
-  revalidateTag("services", "max")
-  revalidateTag("dashboard", "max")
+  revalidateTag("services", { expire: 0 })
+  revalidateTag("dashboard", { expire: 0 })
 
   return NextResponse.json({ id })
 }
