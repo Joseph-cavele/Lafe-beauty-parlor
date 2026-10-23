@@ -42,7 +42,7 @@ import {
   WHATSAPP_MESSAGES,
   whatsappLink,
 } from "@/lib/salon-contact"
-import { formatPrice } from "@/lib/currency"
+import { formatPrice, formatTotal } from "@/lib/currency"
 import {
   isSlotTaken,
   runsPastClosing,
@@ -157,11 +157,19 @@ export function BookingWizard({
   })
 
   const values = watch()
-  const selectedService = services.find((s) => s.id === values.serviceIds?.[0])
+  // In the order the client picked them, so the summary reads as they chose.
+  const selectedServices = (values.serviceIds ?? [])
+    .map((id) => services.find((s) => s.id === id))
+    .filter((s): s is Service => !!s)
   const selectedStylist = stylists.find((s) => s.id === values.stylistId)
-  const selectedDuration = services
-    .filter((s) => values.serviceIds?.includes(s.id))
-    .reduce((sum, s) => sum + s.duration, 0)
+  const selectedDuration = selectedServices.reduce((sum, s) => sum + s.duration, 0)
+
+  function toggleService(id: string) {
+    const ids = values.serviceIds ?? []
+    setValue("serviceIds", ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id], {
+      shouldValidate: true,
+    })
+  }
   const availability = useAvailability(values.stylistId, values.bookingDate)
 
   /* Resolution order matters. A photo stored on the Service document wins,
@@ -366,10 +374,8 @@ export function BookingWizard({
             categoryServices={categoryServices}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}
-            selectedId={values.serviceIds?.[0]}
-            onSelect={(id) =>
-              setValue("serviceIds", [id], { shouldValidate: true })
-            }
+            selectedIds={values.serviceIds ?? []}
+            onToggle={toggleService}
             serviceImage={serviceImage}
             serviceImageAlt={serviceImageAlt}
             isLoading={servicesLoading}
@@ -381,7 +387,7 @@ export function BookingWizard({
         {step === 1 && (
           <StaffStep
             stylists={stylists}
-            selectedService={selectedService}
+            selectedServices={selectedServices}
             selectedId={values.stylistId}
             onSelect={(id) => setValue("stylistId", id, { shouldValidate: true })}
             isLoading={stylistsLoading}
@@ -418,7 +424,7 @@ export function BookingWizard({
 
         {step === 4 && (
           <ReviewStep
-            service={selectedService}
+            services={selectedServices}
             stylist={selectedStylist}
             date={values.bookingDate}
             time={values.bookingTime}
@@ -497,7 +503,7 @@ export function BookingWizard({
       {/* Summary + help */}
       <aside className="flex flex-col gap-5">
         <BookingSummary
-          service={selectedService}
+          services={selectedServices}
           stylist={selectedStylist}
           date={values.bookingDate}
           time={values.bookingTime}
@@ -540,8 +546,8 @@ function ServiceStep({
   categoryServices,
   activeCategory,
   setActiveCategory,
-  selectedId,
-  onSelect,
+  selectedIds,
+  onToggle,
   serviceImage,
   serviceImageAlt,
   isLoading,
@@ -552,8 +558,8 @@ function ServiceStep({
   categoryServices: Service[]
   activeCategory: (typeof SERVICE_CATEGORIES)[number]
   setActiveCategory: (c: (typeof SERVICE_CATEGORIES)[number]) => void
-  selectedId?: string
-  onSelect: (id: string) => void
+  selectedIds: string[]
+  onToggle: (id: string) => void
   serviceImage: (s: Service) => string
   serviceImageAlt: (s: Service) => string
   isLoading: boolean
@@ -569,7 +575,12 @@ function ServiceStep({
         1. Choose Your Service
       </h2>
       <p className="mt-1 text-sm text-brand-muted">
-        Select the service you would like to book.
+        Select one or more services — combine as many as you like in one visit.
+        {selectedIds.length > 0 && (
+          <span className="ml-1 font-medium text-brand-accent-ink">
+            {selectedIds.length} selected.
+          </span>
+        )}
       </p>
 
       <div className="mt-5 grid gap-5 sm:grid-cols-[160px_minmax(0,1fr)]">
@@ -624,12 +635,13 @@ function ServiceStep({
             </div>
           ) : (
             categoryServices.map((service) => {
-              const active = selectedId === service.id
+              const active = selectedIds.includes(service.id)
               return (
                 <button
                   key={service.id}
                   type="button"
-                  onClick={() => onSelect(service.id)}
+                  aria-pressed={active}
+                  onClick={() => onToggle(service.id)}
                   className={cn(
                     "flex items-center gap-4 rounded-xl border p-3 text-left transition-colors",
                     active
@@ -640,15 +652,16 @@ function ServiceStep({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-medium text-brand-text">{service.name}</h3>
+                      {/* A checkbox, not a radio: several can be on. */}
                       <span
                         className={cn(
-                          "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border",
-                          active ? "border-brand-accent" : "border-brand-line"
+                          "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-md border",
+                          active
+                            ? "border-brand-accent bg-brand-accent text-brand-on-accent"
+                            : "border-brand-line"
                         )}
                       >
-                        {active && (
-                          <span className="size-2.5 rounded-full bg-brand-accent" />
-                        )}
+                        {active && <Check className="size-3.5" />}
                       </span>
                     </div>
                     <p className="mt-1 line-clamp-2 text-sm text-brand-muted">
@@ -687,7 +700,7 @@ function ServiceStep({
 
 function StaffStep({
   stylists,
-  selectedService,
+  selectedServices,
   selectedId,
   onSelect,
   isLoading,
@@ -695,20 +708,20 @@ function StaffStep({
   onRetry,
 }: {
   stylists: Stylist[]
-  selectedService?: Service
+  selectedServices: Service[]
   selectedId?: string
   onSelect: (id: string) => void
   isLoading: boolean
   isError: boolean
   onRetry: () => void
 }) {
-  const eligible = selectedService
-    ? stylists.filter(
-        (s) =>
-          s.services.length === 0 ||
-          s.services.some((svc) => svc.id === selectedService.id)
-      )
-    : stylists
+  // A stylist with no list does everything; otherwise they must offer every
+  // service chosen, since one stylist takes the whole visit.
+  const eligible = stylists.filter(
+    (s) =>
+      s.services.length === 0 ||
+      selectedServices.every((chosen) => s.services.some((svc) => svc.id === chosen.id))
+  )
   const list = eligible.length > 0 ? eligible : stylists
 
   return (
@@ -994,26 +1007,27 @@ function DetailsStep({
 /* ---------------- Step 5: Review ---------------- */
 
 function ReviewStep({
-  service,
+  services,
   stylist,
   date,
   time,
   name,
   email,
 }: {
-  service?: Service
+  services: Service[]
   stylist?: Stylist
   date: string
   time: string
   name: string
   email: string
 }) {
+  const duration = services.reduce((sum, s) => sum + s.duration, 0)
   const rows = [
-    { label: "Service", value: service?.name },
+    { label: services.length > 1 ? "Services" : "Service", value: services.length ? services.map((s) => s.name).join(", ") : undefined },
     { label: "Stylist", value: stylist?.name },
     { label: "Date", value: date ? formatDate(date) : undefined },
     { label: "Time", value: time ? formatTime(time) : undefined },
-    { label: "Duration", value: service ? formatDuration(service.duration) : undefined },
+    { label: "Duration", value: services.length ? formatDuration(duration) : undefined },
     { label: "Name", value: name },
     { label: "Email", value: email },
   ]
@@ -1029,15 +1043,15 @@ function ReviewStep({
 
       <dl className="mt-5 divide-y divide-brand-line rounded-xl border border-brand-line/60">
         {rows.map((row) => (
-          <div key={row.label} className="flex items-center justify-between px-4 py-3 text-sm">
-            <dt className="text-brand-muted">{row.label}</dt>
-            <dd className="font-medium text-brand-text">{row.value ?? "—"}</dd>
+          <div key={row.label} className="flex items-center justify-between gap-4 px-4 py-3 text-sm">
+            <dt className="shrink-0 text-brand-muted">{row.label}</dt>
+            <dd className="text-right font-medium text-brand-text">{row.value ?? "—"}</dd>
           </div>
         ))}
         <div className="flex items-center justify-between px-4 py-3.5">
           <dt className="font-display text-base font-semibold text-brand-text">Total</dt>
           <dd className="font-display text-base font-semibold text-brand-accent-ink">
-            {formatPrice(service?.price)}
+            {services.length ? formatTotal(services.map((s) => s.price)) : "—"}
           </dd>
         </div>
       </dl>
@@ -1048,29 +1062,30 @@ function ReviewStep({
 /* ---------------- Booking summary sidebar ---------------- */
 
 function BookingSummary({
-  service,
+  services,
   stylist,
   date,
   time,
   serviceImage,
   serviceImageAlt,
 }: {
-  service?: Service
+  services: Service[]
   stylist?: Stylist
   date: string
   time: string
   serviceImage: (s: Service) => string
   serviceImageAlt: (s: Service) => string
 }) {
+  // The photo shows the first service chosen.
+  const service = services[0]
+  const duration = services.reduce((sum, s) => sum + s.duration, 0)
   const rows = [
-    { label: "Service", value: service?.name },
     { label: "Staff", value: stylist?.name },
     {
       label: "Date & Time",
       value: date && time ? `${formatDate(date)}, ${formatTime(time)}` : date ? formatDate(date) : undefined,
     },
-    { label: "Duration", value: service ? formatDuration(service.duration) : undefined },
-    { label: "Amount", value: service ? formatPrice(service.price) : undefined },
+    { label: "Duration", value: services.length ? formatDuration(duration) : undefined },
   ]
 
   return (
@@ -1090,13 +1105,29 @@ function BookingSummary({
           />
         </div>
         <p className="text-xs text-white/50">
-          {service
-            ? "Your selected service is shown here."
-            : "No service selected yet. Please select a service to see the details here."}
+          {services.length > 1
+            ? `${services.length} services selected.`
+            : service
+              ? "Your selected service is shown here."
+              : "No service selected yet. Please select a service to see the details here."}
         </p>
       </div>
 
-      <dl className="mt-5 flex flex-col">
+      {services.length > 0 && (
+        <ul className="mt-5 flex flex-col">
+          {services.map((s) => (
+            <li
+              key={s.id}
+              className="flex items-center justify-between gap-3 border-b border-white/10 py-2.5 text-sm"
+            >
+              <span className="min-w-0 truncate font-medium text-white/90">{s.name}</span>
+              <span className="shrink-0 text-white/60">{formatPrice(s.price)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <dl className={cn("flex flex-col", services.length === 0 && "mt-5")}>
         {rows.map((row) => (
           <div
             key={row.label}
@@ -1113,7 +1144,7 @@ function BookingSummary({
       <div className="mt-4 flex items-center justify-between">
         <span className="font-display text-lg font-semibold">Total</span>
         <span className="font-display text-lg font-semibold text-brand-accent-ink">
-          {formatPrice(service?.price)}
+          {services.length ? formatTotal(services.map((s) => s.price)) : "—"}
         </span>
       </div>
     </div>
