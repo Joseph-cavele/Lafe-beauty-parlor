@@ -169,6 +169,11 @@ export function BookingWizard({
     setValue("serviceIds", ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id], {
       shouldValidate: true,
     })
+    /* A different set of services means a different list of stylists who can
+       do them all, and a different visit length — so the stylist and the
+       time picked for the old set no longer stand. Pick them again. */
+    setValue("stylistId", "")
+    setValue("bookingTime", "")
   }
   const availability = useAvailability(values.stylistId, values.bookingDate)
 
@@ -723,6 +728,8 @@ function StaffStep({
       selectedServices.every((chosen) => s.services.some((svc) => svc.id === chosen.id))
   )
   const list = eligible.length > 0 ? eligible : stylists
+  const narrowed = selectedServices.length > 0 && eligible.length > 0 && eligible.length < stylists.length
+  const what = selectedServices.length > 1 ? `all ${selectedServices.length} of your services` : selectedServices[0]?.name
 
   return (
     <div>
@@ -732,6 +739,14 @@ function StaffStep({
       <p className="mt-1 text-sm text-brand-muted">
         Pick the professional you&apos;d like to book with.
       </p>
+      {/* Says why the list is short, so one name doesn't look like a bug. */}
+      {narrowed && (
+        <p className="mt-2 rounded-lg bg-brand-accent/10 px-3 py-2 text-xs text-brand-accent-ink">
+          {eligible.length === 1
+            ? `Only ${eligible[0].name} does ${what}. To book with someone else, go back and choose fewer services.`
+            : `Showing the stylists who do ${what}.`}
+        </p>
+      )}
 
       {isLoading ? (
         <div className="flex items-center justify-center gap-2 py-12 text-sm text-brand-muted">
