@@ -1,16 +1,9 @@
 import "./db-env" // must stay first: loads env and refuses databases that aren't La-fe's
 import { connectDB } from "../lib/db"
 import { ServiceModel } from "../lib/models/Service"
-import { StylistModel } from "../lib/models/Stylist"
 import { UserModel } from "../lib/models/User"
 import { salonServices, serviceSlug } from "../lib/salon-services"
 import { ownerEmailFromEnv, ownerNameFromEnv } from "../lib/owner-account"
-import {
-  SALON_CONTACT_PERSON,
-  SALON_EMAIL,
-  SALON_HOURS_DISPLAY,
-  SALON_PHONE_DISPLAY,
-} from "../lib/salon-contact"
 
 /* ══════════════════════════════════════════════════════════════════════
    La-fe seed — IDEMPOTENT. Run it as often as you like; it never creates
@@ -23,16 +16,16 @@ import {
               entered later in the dashboard survives a re-run. Description,
               duration and a combo's checklist are set only when the service
               is first created, so dashboard edits to those survive too.
-   Stylist    Luyanda Thabethe, upserted by email, offered every service.
-   Owner      dashboard login for OWNER_EMAIL (.env), upserted by email.
+   Stylists   not seeded. The team (Naledi, Oarabile, Ofentse) and which
+              services each offers are managed on /dashboard/stylists; the
+              seed used to upsert Luyanda Thabethe, who is no longer a
+              stylist, and would have re-activated her on every run.
+   Owner     dashboard login for OWNER_EMAIL (.env), upserted by email.
               No password: the owner signs in with a one-time code emailed
               to that address (features/auth/server/login-code.ts).
 
    No customers, bookings or notifications are created or copied.
    ══════════════════════════════════════════════════════════════════════ */
-
-/** The stylist record (the person customers book) — not the login. */
-const STYLIST_EMAIL = SALON_EMAIL
 
 async function seed() {
   await connectDB()
@@ -64,23 +57,6 @@ async function seed() {
       }
     })
   )
-  const serviceIds = (
-    await ServiceModel.find({
-      $or: salonServices.map((s) => ({ category: s.category, slug: serviceSlug(s.name) })),
-    }).select("_id")
-  ).map((d) => d._id)
-
-  // ── Stylist ─────────────────────────────────────────────────────────
-  await StylistModel.updateOne(
-    { email: STYLIST_EMAIL },
-    {
-      $set: { name: SALON_CONTACT_PERSON, phone: SALON_PHONE_DISPLAY, active: true },
-      $setOnInsert: { workingHours: SALON_HOURS_DISPLAY },
-      $addToSet: { services: { $each: serviceIds } },
-    },
-    { upsert: true }
-  )
-
   // ── Owner login ─────────────────────────────────────────────────────
   if (!ownerExists) {
     await UserModel.create({
@@ -96,7 +72,6 @@ async function seed() {
     `Services: ${result.upsertedCount} created, ${result.matchedCount} already existed ` +
       `(${total} seeded services in the database).`
   )
-  console.log(`Stylist: ${SALON_CONTACT_PERSON} <${STYLIST_EMAIL}> — offers ${serviceIds.length} services.`)
   console.log(
     !ownerEmail
       ? "Owner login skipped: set OWNER_EMAIL in .env."
